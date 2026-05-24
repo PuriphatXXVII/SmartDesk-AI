@@ -1,0 +1,25 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-brand: #3b82f6;
+  --color-brand-dark: #1e40af;
+
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.18 0.04 264);
+  --color-muted: oklch(0.97 0.01 264);
+  --color-border: oklch(0.92 0.01 264);
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+  }
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+  }
+}
