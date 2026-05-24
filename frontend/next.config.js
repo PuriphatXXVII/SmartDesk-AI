@@ -40,7 +40,8 @@ const securityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  typedRoutes: true,
+  // typedRoutes disabled at MVP — re-enable once all routes are stable
+  // (currently catch-all auth routes /sign-in[[...]], /sign-up[[...]] confuse type generation)
   async headers() {
     return [
       {
