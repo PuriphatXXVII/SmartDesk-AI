@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   security-events: write
+  actions: read
 
 jobs:
   python-deps:
@@ -30,9 +31,10 @@ jobs:
         run: bandit -r app -lll -ii || true
 
   npm-deps:
-    name: NPM dependency audit
+    name: NPM dependency audit (${{ matrix.package }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         package: [frontend, widget]
     steps:
@@ -40,9 +42,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - working-directory: ${{ matrix.package }}
-        run: npm install --package-lock-only
-      - working-directory: ${{ matrix.package }}
+      - name: Install (creates lockfile)
+        working-directory: ${{ matrix.package }}
+        run: npm install --package-lock-only --no-audit --no-fund
+      - name: Audit
+        working-directory: ${{ matrix.package }}
         run: npm audit --audit-level=high || true
 
   secrets-scan:
@@ -57,14 +61,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   codeql:
-    name: CodeQL static analysis
+    name: CodeQL (${{ matrix.language }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         language: [python, javascript-typescript]
     steps:
       - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v3
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-      - uses: github/codeql-action/analyze@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

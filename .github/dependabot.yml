@@ -1,39 +1,74 @@
+# Conservative Dependabot config:
+#   - Only minor + patch bumps (major bumps require manual review)
+#   - Groups related packages so we get 1 PR per ecosystem per week instead of dozens
+#   - Low PR limit (2 per ecosystem) so the inbox stays sane
+#   - Security alerts still create PRs immediately regardless of these limits
+
 version: 2
 updates:
+  # ---------------- Backend (Python) ----------------
   - package-ecosystem: "pip"
     directory: "/backend"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
     labels: ["dependencies", "python"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      backend-deps:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
 
+  # ---------------- Frontend (npm) ----------------
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
     labels: ["dependencies", "javascript"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
-      next-stack:
-        patterns: ["next", "react", "react-dom", "eslint-config-next"]
-      radix:
-        patterns: ["@radix-ui/*"]
+      frontend-deps:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
 
+  # ---------------- Widget (npm) ----------------
   - package-ecosystem: "npm"
     directory: "/widget"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 3
+      interval: "monthly"
+    open-pull-requests-limit: 1
     labels: ["dependencies", "javascript"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      widget-deps:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
 
+  # ---------------- GitHub Actions ----------------
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    open-pull-requests-limit: 1
     labels: ["dependencies", "ci"]
+    groups:
+      gh-actions:
+        patterns: ["*"]
 
+  # ---------------- Docker ----------------
   - package-ecosystem: "docker"
     directory: "/backend"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    open-pull-requests-limit: 1
     labels: ["dependencies", "docker"]
+    ignore:
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major"]

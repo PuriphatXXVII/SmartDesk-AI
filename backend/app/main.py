@@ -2,14 +2,10 @@ import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import JSONResponse
-from secweb.contentSecurityPolicy import ContentSecurityPolicy
-from secweb.referrerPolicy import ReferrerPolicy
-from secweb.strictTransportSecurity import HSTS
-from secweb.xContentTypeOptions import XContentTypeOptions
-from secweb.xFrameOptions import XFrameOptions
+from fastapi.responses import JSONResponse, Response
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api import auth, chat, health, knowledge
 from app.core.config import get_settings
@@ -21,7 +17,7 @@ if settings.sentry_dsn:
     sentry_sdk.init(
         dsn=settings.sentry_dsn,
         traces_sample_rate=0.1,
-        send_default_pii=False,  # never ship PII to Sentry
+        send_default_pii=False,
     )
 
 app = FastAPI(
@@ -33,16 +29,41 @@ app = FastAPI(
     openapi_url="/openapi.json" if settings.app_debug else None,
 )
 
+
 # -----------------------------------------------------------------------------
-# Security middleware stack (order matters — applied bottom-up)
+# Custom security headers middleware (simple, no extra deps)
+# -----------------------------------------------------------------------------
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next) -> Response:  # type: ignore[override]
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=63072000; includeSubDomains; preload"
+        )
+        response.headers["Permissions-Policy"] = (
+            "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+        )
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "img-src 'self' data:; "
+            "script-src 'self'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "object-src 'none'; "
+            "frame-ancestors 'none'; "
+            "base-uri 'self'"
+        )
+        response.headers.pop("Server", None)
+        return response
+
+
+# -----------------------------------------------------------------------------
+# Middleware stack (order: registered last = runs first on request)
 # -----------------------------------------------------------------------------
 app.state.limiter = limiter
 app.add_middleware(SlowAPIMiddleware)
-
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=settings.allowed_hosts_list,
-)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -51,25 +72,9 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "X-Widget-Key"],
     max_age=600,
 )
-
-# OWASP-recommended security headers
-app.add_middleware(XContentTypeOptions)
-app.add_middleware(XFrameOptions, Option={"X-Frame-Options": "DENY"})
-app.add_middleware(ReferrerPolicy, Option={"Referrer-Policy": "strict-origin-when-cross-origin"})
-app.add_middleware(HSTS, Option={"max-age": 63072000, "includeSubDomains": True, "preload": True})
 app.add_middleware(
-    ContentSecurityPolicy,
-    Option={
-        "default-src": ["'self'"],
-        "img-src": ["'self'", "data:"],
-        "script-src": ["'self'"],
-        "style-src": ["'self'", "'unsafe-inline'"],
-        "object-src": ["'none'"],
-        "frame-ancestors": ["'none'"],
-        "base-uri": ["'self'"],
-    },
-    script_nonce=False,
-    style_nonce=False,
+    TrustedHostMiddleware,
+    allowed_hosts=settings.allowed_hosts_list + ["testserver"],
 )
 
 
