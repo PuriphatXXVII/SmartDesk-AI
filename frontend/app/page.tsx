@@ -9,8 +9,8 @@ export default function LandingPage() {
             🤖 SmartDesk <span className="text-brand">AI</span>
           </div>
           <nav className="flex gap-6 text-sm">
-            <Link href="#features">Features</Link>
-            <Link href="#pricing">Pricing</Link>
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
             <Link href="/dashboard" className="font-semibold text-brand">
               Dashboard →
             </Link>
@@ -34,12 +34,12 @@ export default function LandingPage() {
           >
             Start Free
           </Link>
-          <Link
+          <a
             href="#demo"
             className="rounded-lg border border-gray-300 px-8 py-4 font-semibold hover:bg-gray-50"
           >
             See Live Demo
-          </Link>
+          </a>
         </div>
       </section>
 

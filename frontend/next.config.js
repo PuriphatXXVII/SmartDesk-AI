@@ -2,7 +2,6 @@
 
 const isProd = process.env.NODE_ENV === "production";
 
-// Strict CSP — adjust connect-src to your real API + WS host in production.
 const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://*.clerk.com",
@@ -41,7 +40,7 @@ const securityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  experimental: { typedRoutes: true },
+  typedRoutes: true,
   async headers() {
     return [
       {
