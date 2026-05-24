@@ -54,7 +54,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "frame-ancestors 'none'; "
             "base-uri 'self'"
         )
-        response.headers.pop("Server", None)
+        if "server" in response.headers:
+            del response.headers["server"]
         return response
 
 
