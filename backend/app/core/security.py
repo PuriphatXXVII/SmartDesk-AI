@@ -13,11 +13,17 @@ from app.core.config import get_settings
 settings = get_settings()
 
 # -----------------------------------------------------------------------------
-# Rate limiter (Redis-backed for multi-instance deployments)
+# Rate limiter
+#   - Production: Redis-backed (shared across instances)
+#   - Dev / test / CI:  in-process memory (no Redis dependency)
 # -----------------------------------------------------------------------------
+_limiter_storage_uri = (
+    settings.redis_url if settings.app_env == "production" else "memory://"
+)
+
 limiter = Limiter(
     key_func=get_remote_address,
-    storage_uri=settings.redis_url,
+    storage_uri=_limiter_storage_uri,
     default_limits=[f"{settings.rate_limit_per_minute}/minute"],
 )
 
