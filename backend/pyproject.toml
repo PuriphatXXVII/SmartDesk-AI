@@ -68,13 +68,16 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["E501"]
 # FastAPI's idiomatic dependency injection uses Depends(...)/File(...) in argument
 # defaults — that is exactly the pattern. B008 is a known false positive here.
 "app/api/*" = ["B008"]
-# Alembic migrations are auto-generated boilerplate; not worth normalizing every revision.
-"alembic/versions/*" = ["I001", "UP007", "UP035"]
+# Alembic is mostly auto-generated boilerplate; not worth normalizing every revision.
+"alembic/*" = ["I001", "UP007", "UP035"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
