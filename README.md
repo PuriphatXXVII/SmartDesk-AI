@@ -6,7 +6,7 @@
 
 **Multi-tenant SaaS** with **RAG-powered chatbot**, real-time WebSocket chat, embeddable widget, and human handoff.
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-smart--desk--ai--blush.vercel.app-3b82f6?style=for-the-badge)](https://smart-desk-ai-blush.vercel.app)
+[![Status](https://img.shields.io/badge/status-🚧_Active_Development-orange?style=for-the-badge)](https://github.com/PuriphatXXVII/SmartDesk-AI)
 [![CI](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/ci.yml)
 [![Security Scan](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/security.yml/badge.svg)](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -18,11 +18,12 @@
 ![pgvector](https://img.shields.io/badge/pgvector-0.4+-blue)
 ![Claude](https://img.shields.io/badge/Anthropic-Claude_Sonnet_4.6-D97757)
 
-[🌐 Live Demo](https://smart-desk-ai-blush.vercel.app) ·
 [📜 Architecture](docs/ARCHITECTURE.md) ·
 [🗺️ Roadmap](docs/ROADMAP.md) ·
 [🔒 Security](docs/SECURITY.md) ·
-[🚀 Deploy](docs/DEPLOYMENT.md)
+[🚀 Deploy guide](docs/DEPLOYMENT.md)
+
+> 🚧 **Status:** Under active development — features being implemented per the [6-week roadmap](docs/ROADMAP.md). Live demo will be published once authentication, RAG pipeline, and persistent storage are wired end-to-end.
 
 </div>
 
@@ -92,7 +93,7 @@ Small businesses spend **$1.3T/year** on customer service. **60–80%** of quest
 └──────────────────┘               └────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
-│              Next.js 16 Dashboard (Vercel · LIVE 🟢)             │
+│              Next.js 16 Dashboard (Vercel — deploy ready)        │
 │   Owner / Admin / Agent UI — Knowledge mgmt, analytics, chat    │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -147,18 +148,15 @@ Open:
 - 🎨 Dashboard → http://localhost:3000
 - 📜 API docs → http://localhost:8000/docs
 
-### Or just visit the live demo
-👉 **https://smart-desk-ai-blush.vercel.app**
-
 ---
 
 ## 📅 6-Week MVP Roadmap
 
 | Week | Milestone | Status |
 |------|-----------|--------|
-| 1 | Project setup, DB schema, Auth, dashboard skeleton | ✅ Done |
-| 1 | Frontend deploy + landing page polish | ✅ Done |
-| 1 | Clerk JWT verification + DB connection | ⏳ In progress |
+| 1 | Project setup, DB schema, Auth scaffolding, dashboard skeleton | ✅ Done |
+| 1 | Landing page polish + production CI/CD | ✅ Done |
+| 1 | Clerk JWT verification + DB connection (real) | ⏳ Next up |
 | 2 | Knowledge ingestion pipeline (PDF/DOCX/URL → chunks → embeddings) | ⏳ |
 | 3 | RAG chat API with streaming + widget integration | ⏳ |
 | 4 | Conversations view + analytics dashboard (real data) | ⏳ |
