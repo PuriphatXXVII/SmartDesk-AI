@@ -15,12 +15,16 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// Wrap with ClerkProvider only when Clerk is configured.
+// Lets `npm run dev` work out of the box without signing up for Clerk first.
+const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className="min-h-screen antialiased">{children}</body>
-      </html>
-    </ClerkProvider>
+  const body = (
+    <html lang="en">
+      <body className="min-h-screen antialiased">{children}</body>
+    </html>
   );
+
+  return clerkConfigured ? <ClerkProvider>{body}</ClerkProvider> : body;
 }
