@@ -2,10 +2,43 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
 export const metadata: Metadata = {
-  title: "SmartDesk AI — AI-Powered Customer Support",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "SmartDesk AI — AI-Powered Customer Support",
+    template: "%s · SmartDesk AI",
+  },
   description:
-    "Turn your documentation into a 24/7 intelligent support agent in minutes.",
+    "Turn your documentation into a 24/7 AI support agent. RAG-powered, multi-tenant SaaS built with Next.js 16, FastAPI, and Claude.",
+  keywords: [
+    "AI customer support",
+    "RAG chatbot",
+    "knowledge base AI",
+    "embeddable chat widget",
+    "Anthropic Claude",
+    "Next.js SaaS",
+  ],
+  authors: [{ name: "Puriphat Srikamnoi", url: "https://github.com/PuriphatXXVII" }],
+  creator: "Puriphat Srikamnoi",
+  openGraph: {
+    type: "website",
+    siteName: "SmartDesk AI",
+    title: "SmartDesk AI — AI-Powered Customer Support",
+    description:
+      "Turn your documentation into a 24/7 AI support agent. RAG-powered, multi-tenant SaaS.",
+    url: siteUrl,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SmartDesk AI — AI-Powered Customer Support",
+    description:
+      "Turn your documentation into a 24/7 AI support agent. RAG-powered, multi-tenant SaaS.",
+  },
   robots: { index: true, follow: true },
 };
 
@@ -15,8 +48,6 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-// Wrap with ClerkProvider only when Clerk is configured.
-// Lets `npm run dev` work out of the box without signing up for Clerk first.
 const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

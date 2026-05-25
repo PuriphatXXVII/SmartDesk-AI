@@ -1,45 +1,65 @@
+<div align="center">
+
 # 🤖 SmartDesk AI
 
-> **AI-Powered Customer Support Platform** — Turn your documentation into a 24/7 intelligent support agent in minutes.
+### Turn your documentation into a 24/7 AI support agent.
 
-[![Status](https://img.shields.io/badge/status-MVP%20in%20development-yellow)]()
-[![Tech](https://img.shields.io/badge/stack-Next.js%20%7C%20FastAPI%20%7C%20Claude%20AI-blue)]()
+**Multi-tenant SaaS** with **RAG-powered chatbot**, real-time WebSocket chat, embeddable widget, and human handoff.
+
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-smart--desk--ai--blush.vercel.app-3b82f6?style=for-the-badge)](https://smart-desk-ai-blush.vercel.app)
+[![CI](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/ci.yml)
+[![Security Scan](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/security.yml/badge.svg)](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/security.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
+![pgvector](https://img.shields.io/badge/pgvector-0.4+-blue)
+![Claude](https://img.shields.io/badge/Anthropic-Claude_Sonnet_4.6-D97757)
+
+[🌐 Live Demo](https://smart-desk-ai-blush.vercel.app) ·
+[📜 Architecture](docs/ARCHITECTURE.md) ·
+[🗺️ Roadmap](docs/ROADMAP.md) ·
+[🔒 Security](docs/SECURITY.md) ·
+[🚀 Deploy](docs/DEPLOYMENT.md)
+
+</div>
 
 ---
 
-## 🎯 Problem Statement
+## 🎯 What is this?
 
-Small and medium businesses spend **$1.3 trillion globally** on customer service every year. Most repetitive questions (60-80%) could be answered automatically — but building a smart chatbot requires AI expertise that most teams don't have.
+Small businesses spend **$1.3T/year** on customer service. **60–80%** of questions are repetitive and could be auto-answered — but building a smart chatbot needs AI expertise most teams lack.
 
-**SmartDesk AI** lets any business upload their documentation, FAQs, or knowledge base, and instantly get an embeddable AI chatbot that:
-- Answers questions in natural language using **RAG (Retrieval Augmented Generation)**
-- Learns from real conversations and improves over time
-- Escalates to human agents when confidence is low
-- Provides analytics on customer pain points
+**SmartDesk AI** lets any business upload their docs, FAQ, or knowledge base and get an embeddable AI chatbot that:
+- 💬 Answers naturally with **RAG (Retrieval Augmented Generation)** + source citations
+- 🧠 Learns from real conversations
+- 👥 Escalates to humans when confidence is low
+- 📊 Surfaces customer pain points via analytics
 
 ---
 
-## 💡 Key Features
+## ✨ Key Features
 
-### For Business Owners (Dashboard)
-- 📄 **Knowledge Base Upload** — Drag & drop PDFs, DOCX, Markdown, or paste URLs
-- 🎨 **Widget Customization** — Brand colors, position, welcome message, persona
-- 📊 **Analytics Dashboard** — Top questions, satisfaction rate, conversion funnel
-- 👥 **Team Management** — Multi-user with roles (Admin / Agent / Viewer)
-- 🔄 **Human Handoff** — Live takeover when AI confidence < threshold
-- 💬 **Conversation History** — Full transcripts with AI reasoning
+### 👩‍💼 For Business Owners
+- 📄 **Knowledge upload** — drag & drop PDF/DOCX/Markdown or paste URLs
+- 🎨 **Widget customization** — brand colors, position, persona prompt
+- 📊 **Analytics dashboard** — top questions, satisfaction, conversion funnels
+- 👥 **Team management** — multi-user with roles (Admin / Agent / Viewer)
+- 🔄 **Human handoff** — live takeover when AI confidence drops
 
-### For End Users (Widget)
-- 💬 Embeddable chat widget (one line of code to install)
+### 👤 For End Users
+- 💬 Embeddable chat widget (one `<script>` to install)
 - ⚡ Real-time streaming responses
-- 🌐 Multi-language support (auto-detect)
+- 🌐 Multi-language support
 - 📱 Mobile-responsive
 - 🎫 Ticket creation when AI can't help
 
-### For Developers (API)
+### 🛠️ For Developers
 - 🔌 REST + WebSocket API
-- 🪝 Webhooks for events (new conversation, low confidence, satisfaction)
-- 🛠️ Public SDK for custom integrations
+- 🪝 Webhooks (new conversation, low confidence, satisfaction)
+- 📦 Public SDK for custom integrations
 
 ---
 
@@ -53,7 +73,6 @@ Small and medium businesses spend **$1.3 trillion globally** on customer service
 │  │  + <script>      │         │  WebSocket streaming chat   │   │
 │  └──────────────────┘         └──────────────┬──────────────┘   │
 └───────────────────────────────────────────────┼─────────────────┘
-                                                │
                                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                    FastAPI Backend (Python)                      │
@@ -66,54 +85,87 @@ Small and medium businesses spend **$1.3 trillion globally** on customer service
 │  │ Worker      │ │ Service     │ │  5. Stream response      │  │
 │  └─────────────┘ └─────────────┘ └──────────────────────────┘  │
 └──────┬─────────────────────────────────────┬────────────────────┘
-       │                                     │
        ▼                                     ▼
 ┌──────────────────┐               ┌────────────────────────┐
 │  PostgreSQL      │               │  Claude API (Anthropic)│
-│  + pgvector      │               │  + Embeddings          │
-│  ────────────    │               │                        │
-│  • organizations │               └────────────────────────┘
-│  • knowledge_docs│
-│  • doc_chunks    │
-│  • conversations │
-│  • messages      │
-│  • analytics     │
-└──────────────────┘
+│  + pgvector      │               │  + Embeddings (OpenAI) │
+└──────────────────┘               └────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Next.js Dashboard (Vercel)                  │
+│              Next.js 16 Dashboard (Vercel · LIVE 🟢)             │
 │   Owner / Admin / Agent UI — Knowledge mgmt, analytics, chat    │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full deep dive.
 
 ---
 
 ## 🛠️ Tech Stack (latest as of May 2026)
 
-| Layer | Technology | Version | Why |
-|-------|-----------|---------|-----|
-| **Frontend Dashboard** | Next.js (App Router) | **16.2** | Latest stable, includes CVE-2026-23869 RSC DoS fix |
-| | React | **19.2.6** | Patched all 2025–2026 RSC vulnerabilities |
-| | Tailwind CSS | **v4.3** | CSS-first config, 5× faster builds |
-| | shadcn/ui (Radix + Tailwind v4) | latest | Accessible, copy-in components |
-| | TanStack Query / Zustand | latest | Server + client state |
-| **Embeddable Widget** | Vanilla TS + Rollup | latest | <30KB bundle, framework-agnostic |
-| **Backend API** | FastAPI | **0.136.1** | Latest stable |
-| | Pydantic v2 / SQLAlchemy | **2.10 / 2.0.49** | Strict validation + ORM |
-| | Alembic | 1.14+ | Migrations |
-| **Database** | PostgreSQL 16 + pgvector | 0.4+ | Vector search inside Postgres |
-| **Background Jobs** | Celery + Redis | latest | Document ingestion + embeddings |
-| **AI / RAG** | Anthropic Claude `claude-sonnet-4-6` | SDK **0.104.1** | Best reasoning |
-| | OpenAI `text-embedding-3-small` | SDK 1.93+ | Cheap, high-quality embeddings |
-| **Auth** | Clerk (`@clerk/nextjs` **v7.3.7**) | Core 3 | Multi-tenant, MFA, OAuth |
-| **Security** | SlowAPI, secweb, bleach, PyJWT | latest | Rate limit, headers, sanitization, JWT |
-| **Real-time** | FastAPI WebSocket + Redis pub/sub | — | Streaming chat |
-| **File Storage** | AWS S3 / Cloudflare R2 | — | R2 = free egress |
-| **Deployment** | Vercel (FE), Railway/Fly (BE), Supabase (DB) | — | Free tiers, easy scaling |
-| **CI/CD** | GitHub Actions, Docker | — | Lint, type-check, test, security scan |
-| **Observability** | Sentry, Posthog, Logfire | — | Errors + product + LLM traces |
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| **Frontend** | Next.js (App Router) · React · Tailwind v4 · shadcn/ui · Clerk auth · TanStack Query · Zustand | **16.2 · 19.2 · 4.3 · 7.3** |
+| **Widget** | Vanilla TS · Rollup (<30KB bundle) | latest |
+| **Backend** | FastAPI · Pydantic v2 · SQLAlchemy 2 · Alembic | **0.136 · 2.10 · 2.0.49** |
+| **Database** | PostgreSQL + pgvector (vector search in-DB) | **16 · 0.4+** |
+| **Queue / Cache** | Celery + Redis | latest |
+| **AI** | Anthropic Claude `claude-sonnet-4-6` · OpenAI `text-embedding-3-small` | SDK **0.104 · 1.93** |
+| **Auth** | Clerk (multi-tenant, MFA, OAuth) | **v7 Core 3** |
+| **Security** | SlowAPI, custom CSP/HSTS middleware, bleach sanitization, PyJWT | latest |
+| **Deploy** | Vercel (FE) · Railway/Fly (BE — planned) · Supabase (DB — planned) | — |
+| **CI/CD** | GitHub Actions · Docker · Dependabot · CodeQL · Gitleaks | — |
 
-> 🔒 See [docs/SECURITY.md](docs/SECURITY.md) for full threat model and defenses (CSP, HSTS, rate limiting, prompt-injection guards, PII redaction, multi-tenant isolation, CodeQL + Dependabot + Gitleaks scanning).
+> 🔒 See [docs/SECURITY.md](docs/SECURITY.md) for full threat model (STRIDE), defenses, and CVE patch tracking.
+
+---
+
+## 🚀 Quick Start
+
+### Run locally (no Docker required)
+
+```bash
+git clone https://github.com/PuriphatXXVII/SmartDesk-AI.git
+cd SmartDesk-AI
+
+# Backend (works with SQLite — no Postgres needed for the demo)
+cd backend
+python -m venv .venv && .venv\Scripts\activate    # Windows
+# source .venv/bin/activate                       # macOS/Linux
+pip install -e ".[dev]"
+cp .env.example .env  # uses SQLite + memory:// rate limiter
+uvicorn app.main:app --reload
+
+# Frontend (in another terminal)
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Open:
+- 🎨 Dashboard → http://localhost:3000
+- 📜 API docs → http://localhost:8000/docs
+
+### Or just visit the live demo
+👉 **https://smart-desk-ai-blush.vercel.app**
+
+---
+
+## 📅 6-Week MVP Roadmap
+
+| Week | Milestone | Status |
+|------|-----------|--------|
+| 1 | Project setup, DB schema, Auth, dashboard skeleton | ✅ Done |
+| 1 | Frontend deploy + landing page polish | ✅ Done |
+| 1 | Clerk JWT verification + DB connection | ⏳ In progress |
+| 2 | Knowledge ingestion pipeline (PDF/DOCX/URL → chunks → embeddings) | ⏳ |
+| 3 | RAG chat API with streaming + widget integration | ⏳ |
+| 4 | Conversations view + analytics dashboard (real data) | ⏳ |
+| 5 | Human handoff + multi-tenant isolation tests + rate limiting | ⏳ |
+| 6 | Backend deploy + custom domain + demo video | ⏳ |
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for week-by-week deliverables.
 
 ---
 
@@ -121,111 +173,40 @@ Small and medium businesses spend **$1.3 trillion globally** on customer service
 
 ```
 SmartDesk-AI/
-├── frontend/              # Next.js 14 dashboard app
-│   ├── app/               # App Router pages
-│   ├── components/        # Reusable UI components
-│   ├── lib/               # API client, utils
-│   └── public/
-│
-├── backend/               # FastAPI service
-│   ├── app/
-│   │   ├── api/           # Route handlers (auth, kb, chat, analytics)
-│   │   ├── core/          # Config, security, DB
-│   │   ├── models/        # SQLAlchemy models
-│   │   ├── services/      # Business logic
-│   │   └── rag/           # RAG pipeline (embed, retrieve, generate)
-│   ├── tests/
-│   ├── alembic/           # DB migrations
-│   ├── pyproject.toml
-│   └── Dockerfile
-│
-├── widget/                # Embeddable chat widget
-│   ├── src/
-│   ├── package.json
-│   └── rollup.config.js
-│
-├── docs/
-│   ├── ROADMAP.md
-│   ├── API.md
-│   ├── ARCHITECTURE.md
-│   └── DEPLOYMENT.md
-│
-├── .github/workflows/     # CI/CD pipelines
-├── docker-compose.yml     # Local dev environment
-└── README.md
+├── frontend/          # Next.js 16 dashboard (deployed on Vercel)
+├── backend/           # FastAPI service (multi-tenant, RAG, WebSocket)
+├── widget/            # Embeddable Vanilla TS widget (<30KB)
+├── docs/              # Architecture, roadmap, security, deployment guides
+├── .github/           # CI, security scans, Dependabot
+└── docker-compose.yml # Local Postgres + Redis (optional)
 ```
 
 ---
 
-## 🚀 Quick Start (Local Development)
+## 📊 Why this project matters (for recruiters)
 
-### Prerequisites
-- Node.js 20+
-- Python 3.11+
-- Docker + Docker Compose
-- Anthropic API key
-- OpenAI API key (for embeddings)
+This demonstrates:
 
-### Setup
-
-```bash
-# 1. Clone & enter
-git clone <repo-url> && cd SmartDesk-AI
-
-# 2. Start Postgres + Redis
-docker-compose up -d postgres redis
-
-# 3. Backend setup
-cd backend
-python -m venv .venv && source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -e .
-alembic upgrade head
-cp .env.example .env  # Fill in API keys
-uvicorn app.main:app --reload
-
-# 4. Frontend setup (in new terminal)
-cd frontend
-npm install
-cp .env.example .env.local  # Fill in API URL + Clerk keys
-npm run dev
-
-# 5. Widget dev (optional)
-cd widget
-npm install
-npm run dev
-```
-
-Access dashboard at `http://localhost:3000`, API at `http://localhost:8000`.
-
----
-
-## 📅 6-Week MVP Roadmap
-
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the full week-by-week plan.
-
-| Week | Milestone |
-|------|-----------|
-| 1 | Project setup, DB schema, Auth, basic dashboard skeleton |
-| 2 | Knowledge base upload + ingestion pipeline (PDF/DOCX/URL → chunks → embeddings) |
-| 3 | RAG chat API with streaming, widget MVP |
-| 4 | Dashboard: conversations, analytics, widget customization |
-| 5 | Polish: human handoff, multi-tenant isolation, rate limiting |
-| 6 | Deploy to production, landing page, demo data, video walkthrough |
-
----
-
-## 📊 Why This Project Matters (for Recruiters)
-
-This project demonstrates:
-
-- ✅ **Full-stack** ownership (FE + BE + DB + DevOps)
-- ✅ **Modern AI** integration (RAG, vector search, streaming LLMs)
-- ✅ **System design** (multi-tenant SaaS, real-time, background jobs)
-- ✅ **Production engineering** (auth, observability, CI/CD, testing)
-- ✅ **Product thinking** (real problem, real users, real metrics)
+- ✅ **Full-stack ownership** — Frontend + Backend + DB + DevOps
+- ✅ **Modern AI integration** — RAG, vector search, streaming LLMs, embeddings
+- ✅ **System design** — multi-tenant SaaS, real-time WebSocket, background jobs
+- ✅ **Production engineering** — auth, CSP, rate limiting, observability, CI/CD, security scanning
+- ✅ **Product thinking** — real problem (customer support), real users, real metrics
 
 ---
 
 ## 📝 License
 
-MIT
+MIT — see [LICENSE](LICENSE)
+
+## 🔒 Security Policy
+
+See [SECURITY.md](SECURITY.md) for vulnerability reporting.
+
+---
+
+<div align="center">
+
+**Built with ❤️ by [Puriphat Srikamnoi](https://github.com/PuriphatXXVII)** · [Portfolio](https://puriphatxxvii.github.io/my-portfolio/)
+
+</div>
