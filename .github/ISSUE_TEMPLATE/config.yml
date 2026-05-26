@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Security vulnerability
+    url: https://github.com/PuriphatXXVII/SmartDesk-AI/security/advisories/new
+    about: Please report security issues privately via GitHub Security Advisories, not public issues.
+  - name: 📜 Documentation
+    url: https://github.com/PuriphatXXVII/SmartDesk-AI/tree/main/docs
+    about: Check ARCHITECTURE.md, ROADMAP.md, SECURITY.md, DEPLOYMENT.md before filing.

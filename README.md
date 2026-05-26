@@ -123,30 +123,46 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full deep dive.
 
 ## 🚀 Quick Start
 
-### Run locally (no Docker required)
+### Option A — Zero-dependency dev (no Docker, no Postgres)
+
+Perfect for a 5-minute "kick the tires" — runs against SQLite + in-memory rate limiter, no Clerk/AI keys required.
 
 ```bash
 git clone https://github.com/PuriphatXXVII/SmartDesk-AI.git
 cd SmartDesk-AI
 
-# Backend (works with SQLite — no Postgres needed for the demo)
+# --- Backend ---
 cd backend
-python -m venv .venv && .venv\Scripts\activate    # Windows
-# source .venv/bin/activate                       # macOS/Linux
+python -m venv .venv
+.venv\Scripts\activate            # Windows
+# source .venv/bin/activate       # macOS / Linux
 pip install -e ".[dev]"
-cp .env.example .env  # uses SQLite + memory:// rate limiter
+cp .env.example .env              # SQLite + memory:// — no Postgres needed
 uvicorn app.main:app --reload
 
-# Frontend (in another terminal)
+# --- Frontend (new terminal) ---
 cd frontend
 npm install
-cp .env.example .env.local
+cp .env.example .env.local        # Clerk optional — UI works in "demo mode"
 npm run dev
 ```
 
 Open:
 - 🎨 Dashboard → http://localhost:3000
 - 📜 API docs → http://localhost:8000/docs
+
+### Option B — Full local stack (Docker)
+
+When you're ready to test the RAG pipeline end-to-end:
+
+```bash
+docker-compose up -d postgres redis    # pgvector + Redis
+cd backend && alembic upgrade head     # create tables
+# Add real ANTHROPIC_API_KEY + OPENAI_API_KEY + CLERK_* to .env
+# then run backend + frontend as above
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full dev workflow.
 
 ---
 
