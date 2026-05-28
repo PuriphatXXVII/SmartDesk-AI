@@ -15,8 +15,12 @@ class Settings(BaseSettings):
 
     anthropic_api_key: str
     anthropic_model: str = "claude-sonnet-4-6"
-    openai_api_key: str
+    openai_api_key: str = ""
     embedding_model: str = "text-embedding-3-small"
+
+    # Voyage AI — preferred embedding provider (multilingual, free tier, 1024-dim)
+    voyage_api_key: str = ""
+    voyage_model: str = "voyage-3.5-lite"
 
     clerk_secret_key: str = ""
     clerk_publishable_key: str = ""

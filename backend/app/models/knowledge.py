@@ -33,7 +33,7 @@ class DocumentChunk(Base, UUIDPrimaryKey, TimestampMixin):
     )
     org_id: Mapped[uuid.UUID] = mapped_column(GUID(), index=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    embedding: Mapped[list[float] | None] = mapped_column(embedding_column(1536))
+    embedding: Mapped[list[float] | None] = mapped_column(embedding_column(1024))
     chunk_index: Mapped[int] = mapped_column(Integer, default=0)
     meta: Mapped[dict] = mapped_column(JSONType, default=dict)
 
