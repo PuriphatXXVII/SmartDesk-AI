@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -47,6 +48,25 @@ class Settings(BaseSettings):
     @property
     def dev_auth_bypass(self) -> bool:
         return self.app_env != "production" and not self.clerk_configured
+
+    @model_validator(mode="after")
+    def _backfill_empty_keys_from_dotenv(self) -> "Settings":
+        """Some environments inject AI-key env vars as empty strings, which would
+        otherwise shadow the .env file (env vars outrank .env in pydantic-settings).
+        Backfill only the *empty* secret fields from .env so a real .env value wins
+        over an empty injected env var. Non-empty env vars still take precedence,
+        and in production (no .env file) this is a no-op."""
+        empties = [f for f in ("anthropic_api_key", "openai_api_key", "voyage_api_key")
+                   if not getattr(self, f)]
+        if empties:
+            from dotenv import dotenv_values
+
+            vals = dotenv_values(self.model_config.get("env_file", ".env"))
+            for field in empties:
+                v = vals.get(field.upper())
+                if v:
+                    setattr(self, field, v)
+        return self
 
     @property
     def cors_origins_list(self) -> list[str]:
