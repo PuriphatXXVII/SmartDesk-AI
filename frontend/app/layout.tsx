@@ -57,5 +57,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 
-  return clerkConfigured ? <ClerkProvider>{body}</ClerkProvider> : body;
+  return clerkConfigured ? (
+    <ClerkProvider afterSignOutUrl="/">{body}</ClerkProvider>
+  ) : (
+    body
+  );
 }

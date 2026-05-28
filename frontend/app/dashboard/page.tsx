@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { AccountInfo } from "@/components/account-info";
+
 export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -44,7 +46,7 @@ function DashboardHeader() {
           <a className="text-gray-600 hover:text-brand">Knowledge</a>
           <a className="text-gray-600 hover:text-brand">Widget</a>
           <a className="text-gray-600 hover:text-brand">Settings</a>
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand to-purple-500"></div>
+          <AccountInfo />
         </nav>
       </div>
     </header>
