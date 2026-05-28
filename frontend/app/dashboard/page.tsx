@@ -12,9 +12,12 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="text-gray-500">Last 7 days · Acme Inc.</p>
           </div>
-          <button className="rounded-lg bg-brand px-4 py-2 font-semibold text-white hover:bg-brand-dark">
+          <Link
+            href="/dashboard/knowledge"
+            className="rounded-lg bg-brand px-4 py-2 font-semibold text-white hover:bg-brand-dark"
+          >
             + Upload Document
-          </button>
+          </Link>
         </div>
 
         <StatGrid />
@@ -42,8 +45,8 @@ function DashboardHeader() {
         </Link>
         <nav className="flex items-center gap-6 text-sm">
           <a className="font-semibold text-brand">Dashboard</a>
-          <a className="text-gray-600 hover:text-brand">Conversations</a>
-          <a className="text-gray-600 hover:text-brand">Knowledge</a>
+          <Link href="/dashboard/chat" className="text-gray-600 hover:text-brand">Test Chat</Link>
+          <Link href="/dashboard/knowledge" className="text-gray-600 hover:text-brand">Knowledge</Link>
           <a className="text-gray-600 hover:text-brand">Widget</a>
           <a className="text-gray-600 hover:text-brand">Settings</a>
           <AccountInfo />
@@ -171,7 +174,7 @@ function KnowledgeBaseCard() {
     <div className="rounded-xl border bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold">Knowledge base</h2>
-        <a className="text-sm text-brand">Manage →</a>
+        <Link href="/dashboard/knowledge" className="text-sm text-brand">Manage →</Link>
       </div>
       <div className="space-y-2">
         {docs.map((d) => (
@@ -191,9 +194,12 @@ function KnowledgeBaseCard() {
           </div>
         ))}
       </div>
-      <button className="mt-4 w-full rounded-lg border border-dashed border-gray-300 py-3 text-sm text-gray-600 hover:border-brand hover:text-brand">
+      <Link
+        href="/dashboard/knowledge"
+        className="mt-4 block w-full rounded-lg border border-dashed border-gray-300 py-3 text-center text-sm text-gray-600 hover:border-brand hover:text-brand"
+      >
         + Add document
-      </button>
+      </Link>
     </div>
   );
 }
