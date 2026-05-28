@@ -1,23 +1,35 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import APIRouter, Depends, Request
 
+from app.core.deps import get_current_org, get_current_user
 from app.core.security import limiter
+from app.models import Organization, User
 
 router = APIRouter()
-security = HTTPBearer(auto_error=True)
 
 
 @router.get("/me")
 @limiter.limit("60/minute")
 def get_me(
     request: Request,
-    creds: HTTPAuthorizationCredentials = Depends(security),
+    user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_org),
 ) -> dict:
-    # TODO(week 1):
-    #   1. Fetch Clerk JWKS once and cache
-    #   2. Verify JWT signature, issuer, audience, expiry with PyJWT
-    #   3. Load user + org from DB by clerk_user_id
-    #   4. Reject if user is not active or org is suspended
-    if not creds.credentials:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="missing token")
-    return {"user_id": "stub", "org_id": "stub", "role": "admin"}
+    """Return the authenticated user + their organization.
+
+    In dev (no Clerk configured) this returns the synthetic dev user so the
+    dashboard can be built before real auth is wired.
+    """
+    return {
+        "user": {
+            "id": str(user.id),
+            "email": user.email,
+            "role": user.role,
+            "clerk_user_id": user.clerk_user_id,
+        },
+        "organization": {
+            "id": str(org.id),
+            "name": org.name,
+            "slug": org.slug,
+            "plan": org.plan,
+        },
+    }

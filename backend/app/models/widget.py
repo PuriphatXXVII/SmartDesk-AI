@@ -2,17 +2,17 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, String, Text, func
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
+from app.models._types import GUID
 
 
 class WidgetConfig(Base):
     __tablename__ = "widget_configs"
 
     org_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        GUID(),
         ForeignKey("organizations.id", ondelete="CASCADE"),
         primary_key=True,
     )

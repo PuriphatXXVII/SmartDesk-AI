@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,11 +9,24 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.api import auth, chat, health, knowledge
+from app.api import auth, chat, health, knowledge, webhooks
 from app.core.config import get_settings
 from app.core.security import limiter
 
 settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # On SQLite dev (no Alembic — pgvector DDL can't run there), create the auth
+    # tables so the app works end-to-end with zero setup. Production uses Alembic
+    # against Postgres and skips this.
+    if settings.database_url.startswith("sqlite"):
+        from app import models  # noqa: F401  (register all tables)
+        from app.core.db import Base, engine
+
+        Base.metadata.create_all(bind=engine)
+    yield
 
 if settings.sentry_dsn:
     sentry_sdk.init(
@@ -27,6 +42,7 @@ app = FastAPI(
     docs_url="/docs" if settings.app_debug else None,
     redoc_url=None,
     openapi_url="/openapi.json" if settings.app_debug else None,
+    lifespan=lifespan,
 )
 
 
@@ -94,3 +110,4 @@ app.include_router(health.router, tags=["health"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(knowledge.router, prefix="/api/knowledge", tags=["knowledge"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+app.include_router(webhooks.router, prefix="/api/webhooks", tags=["webhooks"])

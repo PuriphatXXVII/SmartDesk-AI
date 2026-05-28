@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     clerk_publishable_key: str = ""
     clerk_jwt_issuer: str = ""
     clerk_jwks_url: str = ""
+    clerk_webhook_secret: str = ""
 
     cors_origins: str = "http://localhost:3000"
     allowed_hosts: str = "localhost,127.0.0.1"
@@ -31,6 +32,17 @@ class Settings(BaseSettings):
     widget_rate_limit_per_minute: int = 20
 
     max_upload_mb: int = 25
+
+    # When Clerk isn't configured (no JWKS URL) in a non-production env, accept a
+    # synthetic dev user so the frontend/dashboard can be built before signing up
+    # for Clerk. NEVER active in production.
+    @property
+    def clerk_configured(self) -> bool:
+        return bool(self.clerk_jwks_url or self.clerk_jwt_issuer)
+
+    @property
+    def dev_auth_bypass(self) -> bool:
+        return self.app_env != "production" and not self.clerk_configured
 
     @property
     def cors_origins_list(self) -> list[str]:
