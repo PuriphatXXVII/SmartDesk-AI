@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.clerk_api import full_name, primary_email
 from app.core.config import get_settings
 from app.core.deps import get_db, provision_user
 from app.models import User
@@ -43,15 +44,8 @@ async def _verified_payload(request: Request) -> dict:
     return json.loads(body or b"{}")
 
 
-def _primary_email(data: dict) -> str:
-    emails = data.get("email_addresses") or []
-    primary_id = data.get("primary_email_address_id")
-    for e in emails:
-        if e.get("id") == primary_id:
-            return e.get("email_address", "")
-    if emails:
-        return emails[0].get("email_address", "")
-    return f"{data.get('id', 'unknown')}@users.clerk"
+def _email_or_placeholder(data: dict) -> str:
+    return primary_email(data) or f"{data.get('id', 'unknown')}@users.clerk"
 
 
 @router.post("/clerk")
@@ -63,14 +57,13 @@ async def clerk_webhook(request: Request, db: Session = Depends(get_db)) -> dict
     if event_type == "user.created":
         clerk_id = data.get("id")
         if clerk_id:
-            email = _primary_email(data)
-            name_parts = [data.get("first_name"), data.get("last_name")]
-            full = " ".join(p for p in name_parts if p) or None
+            email = _email_or_placeholder(data)
+            name = full_name(data)
             provision_user(
                 db,
                 clerk_user_id=clerk_id,
                 email=email,
-                org_name=f"{full or email.split('@')[0]}'s workspace",
+                org_name=f"{name or email.split('@')[0]}'s workspace",
             )
         return {"status": "user_provisioned"}
 
@@ -78,7 +71,7 @@ async def clerk_webhook(request: Request, db: Session = Depends(get_db)) -> dict
         clerk_id = data.get("id")
         user = db.scalar(select(User).where(User.clerk_user_id == clerk_id))
         if user:
-            user.email = _primary_email(data)
+            user.email = _email_or_placeholder(data)
             db.commit()
         return {"status": "user_updated"}
 

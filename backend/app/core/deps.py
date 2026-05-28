@@ -20,6 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.clerk import ClerkClaims, verify_token
+from app.core.clerk_api import fetch_clerk_user, full_name, primary_email
 from app.core.config import get_settings
 from app.core.db import SessionLocal
 from app.models import Organization, User
@@ -29,6 +30,23 @@ _bearer = HTTPBearer(auto_error=False)
 
 DEV_CLERK_ID = "dev_user_local"
 DEV_EMAIL = "dev@smartdesk.local"
+PLACEHOLDER_EMAIL_SUFFIX = "@users.clerk"
+
+
+def _resolve_identity(claims: ClerkClaims) -> tuple[str, str | None]:
+    """Best-effort (email, display_name) for a verified Clerk user.
+
+    Order: JWT claim (if a session-token template adds it) -> Clerk Backend API
+    -> placeholder. The placeholder is only used if the API is unreachable.
+    """
+    if claims.email:
+        return claims.email, None
+    data = fetch_clerk_user(claims.clerk_user_id)
+    if data:
+        email = primary_email(data)
+        if email:
+            return email, full_name(data)
+    return f"{claims.clerk_user_id}{PLACEHOLDER_EMAIL_SUFFIX}", None
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -90,10 +108,27 @@ def get_current_user(
         )
 
     claims: ClerkClaims = verify_token(creds.credentials)
+
+    existing = db.scalar(select(User).where(User.clerk_user_id == claims.clerk_user_id))
+    if existing:
+        # Self-heal records provisioned before we could resolve a real email.
+        if existing.email.endswith(PLACEHOLDER_EMAIL_SUFFIX):
+            email, name = _resolve_identity(claims)
+            if not email.endswith(PLACEHOLDER_EMAIL_SUFFIX):
+                existing.email = email
+                org = db.get(Organization, existing.org_id)
+                if org and name:
+                    org.name = f"{name}'s workspace"
+                db.commit()
+                db.refresh(existing)
+        return existing
+
+    email, name = _resolve_identity(claims)
     return provision_user(
         db,
         clerk_user_id=claims.clerk_user_id,
-        email=claims.email or f"{claims.clerk_user_id}@users.clerk",
+        email=email,
+        org_name=f"{name}'s workspace" if name else None,
     )
 
 
