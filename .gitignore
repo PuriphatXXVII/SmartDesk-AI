@@ -39,6 +39,9 @@ npm-debug.log*
 postgres_data/
 redis_data/
 
+# Uploaded documents (local storage; S3/R2 in prod)
+backend/uploads/
+
 # Misc
 .coverage
 htmlcov/

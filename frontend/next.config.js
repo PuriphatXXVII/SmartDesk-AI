@@ -2,10 +2,14 @@
 
 const isProd = process.env.NODE_ENV === "production";
 
+// Clerk loads its JS from *.clerk.accounts.dev and bot-protection (Cloudflare
+// Turnstile) from challenges.cloudflare.com — both must be allowed by the CSP.
+const CLERK_SCRIPT = "https://*.clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com";
+
 // React dev mode + Next.js HMR need eval(). Strip this in production.
 const scriptSrc = isProd
-  ? "script-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://*.clerk.com"
-  : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.com";
+  ? `script-src 'self' 'unsafe-inline' ${CLERK_SCRIPT}`
+  : `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${CLERK_SCRIPT}`;
 
 const csp = [
   "default-src 'self'",
@@ -13,7 +17,9 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com " +
+  "worker-src 'self' blob:",
+  "frame-src https://challenges.cloudflare.com https://*.clerk.accounts.dev",
+  "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com " +
     (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000") +
     " " +
     (process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8000"),
