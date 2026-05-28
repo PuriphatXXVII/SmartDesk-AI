@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "EditorConfig.EditorConfig",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "charliermarsh.ruff",
+    "tamasfe.even-better-toml",
+    "ms-azuretools.vscode-docker",
+    "GitHub.vscode-github-actions",
+    "GitHub.vscode-pull-request-github"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll.eslint": "explicit"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports.ruff": "explicit",
+      "source.fixAll.ruff": "explicit"
+    }
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["backend/tests"],
+  "python.defaultInterpreterPath": "backend/.venv/Scripts/python.exe",
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.ruff_cache": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/.venv": true,
+    "**/dist": true,
+    "**/package-lock.json": true
+  }
+}
