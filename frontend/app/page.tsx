@@ -1,5 +1,10 @@
 import Link from "next/link";
 
+import { WidgetEmbed } from "@/components/widget-embed";
+
+const DEMO_WIDGET_KEY = process.env.NEXT_PUBLIC_DEMO_WIDGET_KEY ?? "";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
 export default function LandingPage() {
   return (
     <main className="flex min-h-screen flex-col">
@@ -10,6 +15,7 @@ export default function LandingPage() {
       <Pricing />
       <Demo />
       <Footer />
+      <WidgetEmbed widgetKey={DEMO_WIDGET_KEY} apiUrl={API_URL} />
     </main>
   );
 }
@@ -190,35 +196,28 @@ function Pricing() {
 }
 
 function Demo() {
+  const live = Boolean(process.env.NEXT_PUBLIC_DEMO_WIDGET_KEY);
   return (
     <section id="demo" className="border-t bg-gray-900 py-24 text-white">
-      <div className="mx-auto max-w-6xl px-4 text-center">
-        <h2 className="mb-6 text-4xl font-bold">Try the widget right here</h2>
-        <p className="mb-10 text-lg text-gray-300">A demo widget loaded with our own docs. Ask anything about SmartDesk AI.</p>
-        <div className="mx-auto max-w-md rounded-xl border border-gray-700 bg-gray-800 p-8 text-left">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="h-3 w-3 animate-pulse rounded-full bg-green-400"></div>
-            <span className="text-sm text-gray-400">SmartDesk Support · online</span>
-          </div>
-          <div className="space-y-3">
-            <div className="rounded-lg bg-gray-700 p-3 text-sm">
-              👋 Hi! I'm the SmartDesk AI. How can I help you today?
-            </div>
-            <div className="ml-auto max-w-[80%] rounded-lg bg-brand p-3 text-right text-sm">
-              How do I install the widget on my site?
-            </div>
-            <div className="rounded-lg bg-gray-700 p-3 text-sm">
-              Just paste this one-liner inside your &lt;body&gt; tag:
-              <pre className="mt-2 overflow-x-auto rounded bg-gray-900 p-2 text-xs text-green-400">
-{`<script src="cdn.smartdesk.ai/widget.js"
-  data-widget-key="wk_xxx" defer>
-</script>`}
-              </pre>
-              <span className="text-xs text-gray-400">📚 Source: docs/installation.md</span>
-            </div>
-          </div>
-        </div>
-        <p className="mt-8 text-sm text-gray-400">⚠️ Demo coming soon — widget integration in Week 3</p>
+      <div className="mx-auto max-w-3xl px-4 text-center">
+        <h2 className="mb-6 text-4xl font-bold">
+          {live ? "👇 The widget is live on this page" : "Try the widget right here"}
+        </h2>
+        <p className="mb-10 text-lg text-gray-300">
+          {live
+            ? "Look at the bottom-right corner — that 💬 bubble is the real SmartDesk widget, talking to the same RAG backend that powers customer deployments. Click it and ask anything."
+            : "Once a demo widget key is configured, a real chat bubble appears on this page powered by the same backend customers use in production."}
+        </p>
+        <pre className="mx-auto max-w-xl overflow-x-auto rounded-lg bg-black/40 p-4 text-left text-xs text-green-400">
+{`<script
+  src="https://cdn.smartdesk.ai/smartdesk.js"
+  data-widget-key="wk_xxx"
+  defer
+></script>`}
+        </pre>
+        <p className="mt-6 text-sm text-gray-400">
+          One script tag · 5.5KB · Real-time streaming · Cites its sources
+        </p>
       </div>
     </section>
   );
