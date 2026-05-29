@@ -1,162 +1,202 @@
 /**
- * SmartDesk AI — Embeddable chat widget
+ * SmartDesk AI — embeddable chat widget (vanilla TS, no deps).
  *
- * Usage:
- *   <script src="https://cdn.smartdesk.ai/widget.js"
+ * Install:
+ *   <script src="https://cdn.smartdesk.ai/smartdesk.js"
  *           data-widget-key="wk_xxx"
+ *           data-api-url="https://api.smartdesk.ai"
  *           defer></script>
+ *
+ * The widget fetches its appearance from /api/widget/config?key=... and streams
+ * answers over /api/chat/ws?key=... (RAG grounded in the org's knowledge base).
  */
 
 interface WidgetConfig {
-  widgetKey: string;
-  apiUrl?: string;
-  wsUrl?: string;
-  primaryColor?: string;
-  position?: "bottom-right" | "bottom-left";
-  welcomeMessage?: string;
+  organization?: string;
+  primary_color: string;
+  position: "bottom-right" | "bottom-left";
+  welcome_message: string;
 }
 
+interface Citation {
+  title: string | null;
+  score: number;
+  snippet: string;
+}
+
+const script = document.currentScript as HTMLScriptElement | null;
+const WIDGET_KEY = script?.dataset.widgetKey ?? "";
+const API_URL = (script?.dataset.apiUrl ?? "http://localhost:8000").replace(/\/$/, "");
+const WS_URL = (script?.dataset.wsUrl ?? API_URL.replace(/^http/, "ws"));
+
 class SmartDeskWidget {
-  private config: Required<WidgetConfig>;
-  private ws: WebSocket | null = null;
+  private cfg: WidgetConfig = {
+    primary_color: "#3b82f6",
+    position: "bottom-right",
+    welcome_message: "Hi! How can I help you?",
+  };
   private root!: HTMLDivElement;
-  private isOpen = false;
+  private ws: WebSocket | null = null;
+  private open = false;
+  private streamingEl: HTMLDivElement | null = null;
 
-  constructor(config: WidgetConfig) {
-    this.config = {
-      apiUrl: "https://api.smartdesk.ai",
-      wsUrl: "wss://api.smartdesk.ai",
-      primaryColor: "#3b82f6",
-      position: "bottom-right",
-      welcomeMessage: "Hi! How can I help you?",
-      ...config,
-    };
-    this.mount();
-  }
-
-  private mount(): void {
+  async init() {
+    await this.loadConfig();
     this.root = document.createElement("div");
     this.root.id = "smartdesk-widget";
-    this.root.innerHTML = this.renderClosed();
     document.body.appendChild(this.root);
     this.injectStyles();
-    this.attachEvents();
+    this.renderClosed();
   }
 
-  private renderClosed(): string {
-    return `
-      <button class="sd-fab" aria-label="Open chat">💬</button>
-    `;
+  private async loadConfig() {
+    try {
+      const res = await fetch(`${API_URL}/api/widget/config?key=${encodeURIComponent(WIDGET_KEY)}`);
+      if (res.ok) this.cfg = { ...this.cfg, ...(await res.json()) };
+    } catch {
+      /* keep defaults if offline */
+    }
   }
 
-  private renderOpen(): string {
-    return `
-      <div class="sd-panel">
-        <div class="sd-header">
-          <span>SmartDesk Support</span>
-          <button class="sd-close" aria-label="Close">✕</button>
-        </div>
-        <div class="sd-messages">
-          <div class="sd-message sd-bot">${this.config.welcomeMessage}</div>
-        </div>
-        <form class="sd-input">
-          <input type="text" placeholder="Type your question..." />
-          <button type="submit">Send</button>
-        </form>
-      </div>
-    `;
-  }
-
-  private injectStyles(): void {
-    const c = this.config.primaryColor;
+  private injectStyles() {
+    const c = this.cfg.primary_color;
+    const side = this.cfg.position === "bottom-left" ? "left: 20px;" : "right: 20px;";
     const style = document.createElement("style");
     style.textContent = `
-      #smartdesk-widget { position: fixed; ${
-        this.config.position === "bottom-left" ? "left: 20px;" : "right: 20px;"
-      } bottom: 20px; z-index: 999999; font-family: system-ui, sans-serif; }
-      .sd-fab { width: 56px; height: 56px; border-radius: 50%; background: ${c};
-                color: white; border: none; cursor: pointer; font-size: 24px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-      .sd-panel { width: 360px; height: 520px; background: white; border-radius: 12px;
-                  display: flex; flex-direction: column; overflow: hidden;
-                  box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-      .sd-header { background: ${c}; color: white; padding: 12px 16px;
-                   display: flex; justify-content: space-between; align-items: center; }
-      .sd-close { background: none; border: none; color: white; cursor: pointer; font-size: 18px; }
-      .sd-messages { flex: 1; overflow-y: auto; padding: 16px; }
-      .sd-message { padding: 8px 12px; border-radius: 12px; margin-bottom: 8px; max-width: 80%; }
-      .sd-bot { background: #f1f5f9; }
-      .sd-user { background: ${c}; color: white; margin-left: auto; }
-      .sd-input { display: flex; border-top: 1px solid #e5e7eb; padding: 8px; }
-      .sd-input input { flex: 1; border: 1px solid #d1d5db; border-radius: 8px;
-                        padding: 8px 12px; outline: none; }
-      .sd-input button { background: ${c}; color: white; border: none;
-                         border-radius: 8px; padding: 0 16px; margin-left: 8px; cursor: pointer; }
+      #smartdesk-widget{position:fixed;${side}bottom:20px;z-index:2147483000;font-family:system-ui,-apple-system,sans-serif}
+      .sd-fab{width:60px;height:60px;border-radius:50%;background:${c};color:#fff;border:none;cursor:pointer;font-size:26px;box-shadow:0 6px 20px rgba(0,0,0,.18);transition:transform .15s}
+      .sd-fab:hover{transform:scale(1.05)}
+      .sd-panel{width:370px;max-width:calc(100vw - 40px);height:560px;max-height:calc(100vh - 40px);background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.22)}
+      .sd-head{background:${c};color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}
+      .sd-head b{font-size:15px}
+      .sd-head small{opacity:.85;font-size:12px;display:block}
+      .sd-x{background:none;border:none;color:#fff;cursor:pointer;font-size:20px;line-height:1}
+      .sd-msgs{flex:1;overflow-y:auto;padding:16px;background:#f8fafc}
+      .sd-msg{padding:10px 14px;border-radius:14px;margin-bottom:10px;max-width:85%;font-size:14px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+      .sd-bot{background:#fff;border:1px solid #e5e7eb;color:#0f172a}
+      .sd-user{background:${c};color:#fff;margin-left:auto}
+      .sd-cite{font-size:11px;color:#64748b;margin:-4px 0 10px;padding-left:4px}
+      .sd-conf{font-size:11px;color:#94a3b8;margin:-6px 0 10px;padding-left:4px}
+      .sd-form{display:flex;gap:8px;border-top:1px solid #e5e7eb;padding:10px;background:#fff}
+      .sd-form input{flex:1;border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;outline:none;font-size:14px}
+      .sd-form input:focus{border-color:${c}}
+      .sd-form button{background:${c};color:#fff;border:none;border-radius:10px;padding:0 16px;cursor:pointer;font-weight:600}
+      .sd-form button:disabled{opacity:.5}
+      .sd-foot{text-align:center;font-size:10px;color:#cbd5e1;padding:4px}
     `;
     document.head.appendChild(style);
   }
 
-  private attachEvents(): void {
-    this.root.addEventListener("click", (e) => {
-      const target = e.target as HTMLElement;
-      if (target.classList.contains("sd-fab")) this.open();
-      if (target.classList.contains("sd-close")) this.close();
-    });
-
-    this.root.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const input = (e.target as HTMLFormElement).querySelector("input");
-      if (input?.value) this.sendMessage(input.value);
-    });
+  private renderClosed() {
+    this.open = false;
+    this.ws?.close();
+    this.ws = null;
+    this.root.innerHTML = `<button class="sd-fab" aria-label="Open chat">💬</button>`;
+    this.root.querySelector(".sd-fab")!.addEventListener("click", () => this.openPanel());
   }
 
-  private open(): void {
-    this.isOpen = true;
-    this.root.innerHTML = this.renderOpen();
+  private openPanel() {
+    this.open = true;
+    const title = this.cfg.organization ? `${this.cfg.organization} Support` : "Support";
+    this.root.innerHTML = `
+      <div class="sd-panel">
+        <div class="sd-head"><div><b>${esc(title)}</b><small>● AI assistant</small></div><button class="sd-x" aria-label="Close">✕</button></div>
+        <div class="sd-msgs"></div>
+        <form class="sd-form"><input type="text" placeholder="Type your question..." autocomplete="off"/><button type="submit">Send</button></form>
+        <div class="sd-foot">Powered by SmartDesk AI</div>
+      </div>`;
+    this.root.querySelector(".sd-x")!.addEventListener("click", () => this.renderClosed());
+    this.root.querySelector(".sd-form")!.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = this.root.querySelector<HTMLInputElement>(".sd-form input")!;
+      const v = input.value.trim();
+      if (v) {
+        this.send(v);
+        input.value = "";
+      }
+    });
+    this.addBot(this.cfg.welcome_message);
     this.connect();
   }
 
-  private close(): void {
-    this.isOpen = false;
-    this.ws?.close();
-    this.root.innerHTML = this.renderClosed();
+  private connect() {
+    this.ws = new WebSocket(`${WS_URL}/api/chat/ws?key=${encodeURIComponent(WIDGET_KEY)}`);
+    this.ws.onmessage = (ev) => this.onEvent(JSON.parse(ev.data));
   }
 
-  private connect(): void {
-    this.ws = new WebSocket(
-      `${this.config.wsUrl}/api/chat/ws?key=${this.config.widgetKey}`
-    );
-    this.ws.onmessage = (ev) => {
-      const data = JSON.parse(ev.data);
-      this.appendMessage(data.content, "bot");
-    };
+  private send(text: string) {
+    this.addUser(text);
+    this.streamingEl = null;
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ content: text }));
+    } else {
+      this.addBot("⚠️ Connection lost. Please reopen the chat.");
+    }
   }
 
-  private sendMessage(text: string): void {
-    this.appendMessage(text, "user");
-    this.ws?.send(JSON.stringify({ content: text }));
-    const input = this.root.querySelector("input");
-    if (input) input.value = "";
+  private onEvent(e: { type: string; content?: string; citations?: Citation[]; confidence?: number }) {
+    if (e.type === "token" && e.content) {
+      if (!this.streamingEl) this.streamingEl = this.addBot("");
+      this.streamingEl.textContent += e.content;
+      this.scroll();
+    } else if (e.type === "citations") {
+      if (typeof e.confidence === "number") this.addConfidence(e.confidence);
+      (e.citations ?? []).forEach((c, i) => this.addCite(i + 1, c));
+    } else if (e.type === "error") {
+      this.addBot(`⚠️ ${e.content ?? "Something went wrong."}`);
+    }
   }
 
-  private appendMessage(text: string, who: "bot" | "user"): void {
-    const messages = this.root.querySelector(".sd-messages");
-    if (!messages) return;
+  private addUser(t: string) {
+    this.append("sd-user", t);
+  }
+  private addBot(t: string): HTMLDivElement {
+    return this.append("sd-bot", t);
+  }
+  private append(cls: string, text: string): HTMLDivElement {
     const el = document.createElement("div");
-    el.className = `sd-message sd-${who}`;
+    el.className = `sd-msg ${cls}`;
     el.textContent = text;
-    messages.appendChild(el);
-    messages.scrollTop = messages.scrollHeight;
+    this.msgs().appendChild(el);
+    this.scroll();
+    return el;
+  }
+  private addConfidence(conf: number) {
+    const el = document.createElement("div");
+    el.className = "sd-conf";
+    el.textContent = `confidence ${(conf * 100).toFixed(0)}%`;
+    this.msgs().appendChild(el);
+  }
+  private addCite(n: number, c: Citation) {
+    const el = document.createElement("div");
+    el.className = "sd-cite";
+    el.textContent = `[${n}] ${c.title ?? "source"} · ${(c.score * 100).toFixed(0)}% match`;
+    this.msgs().appendChild(el);
+    this.scroll();
+  }
+
+  private msgs(): HTMLDivElement {
+    return this.root.querySelector(".sd-msgs")!;
+  }
+  private scroll() {
+    const m = this.msgs();
+    if (m) m.scrollTop = m.scrollHeight;
   }
 }
 
-const script = document.currentScript as HTMLScriptElement | null;
-const widgetKey = script?.dataset.widgetKey;
-if (widgetKey) {
-  new SmartDeskWidget({ widgetKey });
+function esc(s: string): string {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
 }
 
-(window as unknown as { SmartDeskWidget: typeof SmartDeskWidget }).SmartDeskWidget =
-  SmartDeskWidget;
-
-export { SmartDeskWidget };
+if (WIDGET_KEY) {
+  const w = new SmartDeskWidget();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => w.init());
+  } else {
+    w.init();
+  }
+} else {
+  console.warn("[SmartDesk] missing data-widget-key on <script> tag");
+}

@@ -42,6 +42,11 @@ redis_data/
 # Uploaded documents (local storage; S3/R2 in prod)
 backend/uploads/
 
+# Local widget demo artifacts (contain a dev widget_key + build copy)
+frontend/public/smartdesk.js
+frontend/public/widget-demo.html
+widget/dist/
+
 # Misc
 .coverage
 htmlcov/

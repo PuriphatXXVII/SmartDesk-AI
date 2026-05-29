@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.widget import org_by_widget_key
 from app.core.db import SessionLocal
 from app.core.deps import get_current_org, get_db
 from app.core.security import detect_prompt_injection, limiter, sanitize_user_input
@@ -79,23 +80,19 @@ def _cite(c) -> dict:  # noqa: ANN001
 async def chat_socket(websocket: WebSocket) -> None:
     """Real-time streaming chat for the embeddable widget.
 
-    Auth: the widget passes ?org_id=<uuid> (mapped from a public widget key in a
-    later iteration). Each message runs the RAG pipeline and streams tokens back.
+    Auth: the widget passes ?key=wk_xxx (public widget key) which maps to one org.
+    Each message runs the RAG pipeline and streams tokens back.
     """
     await websocket.accept()
-    org_id_raw = websocket.query_params.get("org_id")
-    try:
-        org_id = UUID(org_id_raw) if org_id_raw else None
-    except ValueError:
-        org_id = None
-
-    if org_id is None:
-        await websocket.send_json({"type": "error", "message": "missing org_id"})
-        await websocket.close()
-        return
 
     db: Session = SessionLocal()
     try:
+        org = org_by_widget_key(db, websocket.query_params.get("key", ""))
+        if org is None:
+            await websocket.send_json({"type": "error", "message": "invalid widget key"})
+            await websocket.close()
+            return
+
         while True:
             data = await websocket.receive_json()
             content = sanitize_user_input(str(data.get("content", "")), max_length=2000)
@@ -105,7 +102,7 @@ async def chat_socket(websocket: WebSocket) -> None:
             if detect_prompt_injection(content):
                 await websocket.send_json({"type": "flagged", "reason": "suspicious_input"})
 
-            async for event in answer_stream(db, org_id, content):
+            async for event in answer_stream(db, org.id, content):
                 await websocket.send_json(event)
     except WebSocketDisconnect:
         return

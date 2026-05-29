@@ -1,3 +1,4 @@
+import secrets
 import uuid
 
 from sqlalchemy import ForeignKey, String
@@ -8,12 +9,20 @@ from app.models._base import TimestampMixin, UUIDPrimaryKey
 from app.models._types import GUID
 
 
+def generate_widget_key() -> str:
+    """Public, embeddable key (safe to expose in client HTML). Maps to one org."""
+    return f"wk_{secrets.token_urlsafe(24)}"
+
+
 class Organization(Base, UUIDPrimaryKey, TimestampMixin):
     __tablename__ = "organizations"
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
     plan: Mapped[str] = mapped_column(String(32), default="free", nullable=False)
+    widget_key: Mapped[str] = mapped_column(
+        String(64), unique=True, index=True, default=generate_widget_key
+    )
 
     users: Mapped[list["User"]] = relationship(back_populates="organization")
 
