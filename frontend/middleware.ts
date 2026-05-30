@@ -13,7 +13,11 @@ const isPublicRoute = createRouteMatcher([
 
 const protectedClerkMiddleware = clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
-    await auth.protect();
+    const { userId, redirectToSignIn } = await auth();
+    // Send signed-out visitors to the sign-in page instead of a bare 404.
+    if (!userId) {
+      return redirectToSignIn({ returnBackUrl: req.url });
+    }
   }
 });
 
