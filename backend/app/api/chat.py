@@ -131,17 +131,29 @@ async def chat_socket(websocket: WebSocket) -> None:
                 await out_q.put({"type": "error", "message": "empty message"})
                 continue
 
-            # Persist the conversation lazily on the first real message (no empty rows).
+            # On the first message: reuse the visitor's existing conversation (the widget
+            # echoes back its id so reopening continues the same thread) else create one.
             if conv is None:
-                conv = Conversation(org_id=org.id, status="active")
-                db.add(conv)
-                db.commit()
-                db.refresh(conv)
-                conv.visitor_id = f"web-{str(conv.id)[:4]}"
-                db.commit()
+                requested = data.get("conversation_id")
+                if requested:
+                    try:
+                        existing = db.get(Conversation, UUID(str(requested)))
+                    except (ValueError, AttributeError):
+                        existing = None
+                    if existing is not None and existing.org_id == org.id:
+                        conv = existing
+                is_new = conv is None
+                if conv is None:
+                    conv = Conversation(org_id=org.id, status="active")
+                    db.add(conv)
+                    db.commit()
+                    db.refresh(conv)
+                    conv.visitor_id = f"web-{str(conv.id)[:4]}"
+                    db.commit()
                 hub.subscribe(str(conv.id), out_q)
                 await out_q.put({"type": "session", "conversation_id": str(conv.id)})
-                notify(org, "conversation.started", {"conversation_id": str(conv.id)})
+                if is_new:
+                    notify(org, "conversation.started", {"conversation_id": str(conv.id)})
 
             if detect_prompt_injection(content):
                 await out_q.put({"type": "flagged", "reason": "suspicious_input"})
