@@ -50,3 +50,7 @@ widget/dist/
 # Misc
 .coverage
 htmlcov/
+
+# Local-only project notes + editor tooling (kept on disk, not published)
+.claude/
+CLAUDE.md
