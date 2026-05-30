@@ -166,8 +166,8 @@ export default function ConversationsPage() {
                     selected === c.id ? "bg-surface-2" : "hover:bg-surface-2"
                   }`}
                 >
-                  <div className="grid h-9 w-9 flex-none place-items-center rounded-full bg-surface-2 text-xs text-muted">
-                    {c.visitor.slice(-2)}
+                  <div className="grid h-9 w-9 flex-none place-items-center rounded-full bg-surface-2 text-xs font-semibold text-muted">
+                    {c.visitor.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium text-fg">{c.preview || "—"}</div>

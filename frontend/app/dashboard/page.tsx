@@ -259,8 +259,8 @@ function RecentConversations({ t }: { t: Messages }) {
               href="/dashboard/conversations"
               className="flex items-center gap-4 py-3 transition hover:opacity-90"
             >
-              <div className="grid h-9 w-9 flex-none place-items-center rounded-full bg-surface-2 text-xs text-muted">
-                {c.visitor.slice(-2)}
+              <div className="grid h-9 w-9 flex-none place-items-center rounded-full bg-surface-2 text-xs font-semibold text-muted">
+                {c.visitor.slice(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="truncate font-medium text-fg">{c.preview || "—"}</div>

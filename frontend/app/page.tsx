@@ -357,19 +357,15 @@ function Footer() {
           <Bot className="h-4 w-4 text-brand-fg" />
           <span>{t.footer.copy}</span>
         </div>
-        <div className="flex items-center gap-6">
-          <a href="#features" className="transition hover:text-fg">{t.nav.features}</a>
-          <a href="#pricing" className="transition hover:text-fg">{t.nav.pricing}</a>
-          <a
-            href="https://github.com/PuriphatXXVII/SmartDesk-AI"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 transition hover:text-fg"
-          >
-            <Github className="h-4 w-4" />
-            GitHub
-          </a>
-        </div>
+        <a
+          href="https://github.com/PuriphatXXVII/SmartDesk-AI"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 transition hover:text-fg"
+        >
+          <Github className="h-4 w-4" />
+          GitHub
+        </a>
       </div>
     </footer>
   );

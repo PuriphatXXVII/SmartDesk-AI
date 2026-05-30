@@ -77,6 +77,7 @@ class SmartDeskWidget {
   private streamingRaw = "";
   private typingEl: HTMLDivElement | null = null;
   private conversationId: string | null = null;
+  private visitorName: string | null = null; // null = not asked, "" = skipped, else the name
   private history: Msg[] = [];
 
   async init() {
@@ -98,6 +99,7 @@ class SmartDeskWidget {
       if (raw) {
         const d = JSON.parse(raw);
         this.conversationId = typeof d.cid === "string" ? d.cid : null;
+        this.visitorName = typeof d.name === "string" ? d.name : null;
         this.history = Array.isArray(d.msgs) ? d.msgs : [];
       }
     } catch {
@@ -108,7 +110,7 @@ class SmartDeskWidget {
     try {
       sessionStorage.setItem(
         STORE_KEY,
-        JSON.stringify({ cid: this.conversationId, msgs: this.history.slice(-50) }),
+        JSON.stringify({ cid: this.conversationId, name: this.visitorName, msgs: this.history.slice(-50) }),
       );
     } catch {
       /* ignore */
@@ -161,7 +163,16 @@ class SmartDeskWidget {
       .sd-form input:focus{border-color:${c}}
       .sd-form button{background:${c};color:#fff;border:none;border-radius:10px;padding:0 16px;cursor:pointer;font-weight:600}
       .sd-form button:disabled{opacity:.5}
-      .sd-foot{text-align:center;font-size:10px;color:#cbd5e1;padding:4px}
+      .sd-intro{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:26px 20px;background:#f8fafc}
+      .sd-intro-greet{font-size:15px;color:#0f172a;line-height:1.5;margin-bottom:6px}
+      .sd-intro-l{font-size:13px;color:#475569;font-weight:600}
+      .sd-intro-l span{color:#94a3b8;font-weight:400}
+      .sd-intro-input{border:1px solid #d1d5db;border-radius:10px;padding:11px 12px;font-size:14px;color:#0f172a;background:#fff;outline:none}
+      .sd-intro-input:focus{border-color:${c}}
+      .sd-intro-start{background:${c};color:#fff;border:none;border-radius:10px;padding:11px;font-weight:600;cursor:pointer;font-size:14px;margin-top:4px}
+      .sd-intro-skip{background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer;padding:4px}
+      .sd-intro-skip:hover{color:#64748b}
+      .sd-foot{text-align:center;font-size:11px;color:#64748b;padding:5px}
     `;
     document.head.appendChild(style);
   }
@@ -175,11 +186,53 @@ class SmartDeskWidget {
     this.root.querySelector(".sd-fab")!.addEventListener("click", () => this.openPanel());
   }
 
-  private openPanel() {
+  private head(): string {
     const title = this.cfg.organization ? `${this.cfg.organization} Support` : "Support";
+    return `<div class="sd-head"><div><b>${esc(title)}</b><small>● AI assistant</small></div><button class="sd-x" aria-label="Close">✕</button></div>`;
+  }
+
+  private setName(name: string) {
+    this.visitorName = name;
+    this.persist();
+  }
+
+  private openPanel() {
+    // A first-time visitor (no name asked, no history) sees a skippable name prompt.
+    if (this.visitorName === null && this.history.length === 0) this.renderIntro();
+    else this.renderChat();
+  }
+
+  private renderIntro() {
     this.root.innerHTML = `
       <div class="sd-panel">
-        <div class="sd-head"><div><b>${esc(title)}</b><small>● AI assistant</small></div><button class="sd-x" aria-label="Close">✕</button></div>
+        ${this.head()}
+        <div class="sd-intro">
+          <div class="sd-intro-greet">${md(this.cfg.welcome_message)}</div>
+          <label class="sd-intro-l">Your name <span>(optional)</span></label>
+          <input class="sd-intro-input" type="text" placeholder="e.g. Alex" autocomplete="name" maxlength="60" />
+          <button class="sd-intro-start" type="button">Start chat →</button>
+          <button class="sd-intro-skip" type="button">Skip for now</button>
+        </div>
+        <div class="sd-foot">Powered by SmartDesk AI</div>
+      </div>`;
+    this.root.querySelector(".sd-x")!.addEventListener("click", () => this.renderClosed());
+    const input = this.root.querySelector<HTMLInputElement>(".sd-intro-input")!;
+    const begin = (name: string) => {
+      this.setName(name);
+      this.renderChat();
+    };
+    this.root.querySelector(".sd-intro-start")!.addEventListener("click", () => begin(input.value.trim()));
+    this.root.querySelector(".sd-intro-skip")!.addEventListener("click", () => begin(""));
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") begin(input.value.trim());
+    });
+    setTimeout(() => input.focus(), 40);
+  }
+
+  private renderChat() {
+    this.root.innerHTML = `
+      <div class="sd-panel">
+        ${this.head()}
         <div class="sd-msgs"></div>
         <form class="sd-form"><input type="text" placeholder="Type your question..." autocomplete="off"/><button type="submit">Send</button></form>
         <div class="sd-foot">Powered by SmartDesk AI</div>
@@ -195,7 +248,7 @@ class SmartDeskWidget {
       }
     });
 
-    // Replay this tab's history, or greet a fresh visitor.
+    // Replay this tab's history, or greet the visitor.
     if (this.history.length) {
       for (const m of this.history) this.renderMsg(m.role, m.content);
     } else {
@@ -217,8 +270,9 @@ class SmartDeskWidget {
     this.streamingRaw = "";
     this.showTyping();
 
-    const payload: { content: string; conversation_id?: string } = { content: text };
+    const payload: { content: string; conversation_id?: string; visitor_name?: string } = { content: text };
     if (this.conversationId) payload.conversation_id = this.conversationId;
+    else if (this.visitorName) payload.visitor_name = this.visitorName;
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(payload));
     } else {

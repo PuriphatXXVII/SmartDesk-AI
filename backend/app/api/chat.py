@@ -148,7 +148,9 @@ async def chat_socket(websocket: WebSocket) -> None:
                     db.add(conv)
                     db.commit()
                     db.refresh(conv)
-                    conv.visitor_id = f"web-{str(conv.id)[:4]}"
+                    # Use the visitor's name (from the widget's pre-chat prompt) if given.
+                    name = sanitize_user_input(str(data.get("visitor_name", "")), max_length=80).strip()
+                    conv.visitor_id = name or f"web-{str(conv.id)[:4]}"
                     db.commit()
                 hub.subscribe(str(conv.id), out_q)
                 await out_q.put({"type": "session", "conversation_id": str(conv.id)})

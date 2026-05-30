@@ -80,7 +80,7 @@ const en = {
     button: "Get started free",
   },
   footer: {
-    copy: "© 2026 SmartDesk AI — built with Next.js, FastAPI & Claude",
+    copy: "© 2026 SmartDesk AI",
   },
   dashboard: {
     title: "Dashboard",
@@ -286,7 +286,7 @@ const th: Messages = {
     button: "เริ่มใช้ฟรี",
   },
   footer: {
-    copy: "© 2026 SmartDesk AI — สร้างด้วย Next.js, FastAPI และ Claude",
+    copy: "© 2026 SmartDesk AI",
   },
   dashboard: {
     title: "แดชบอร์ด",
