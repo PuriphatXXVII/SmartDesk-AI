@@ -19,23 +19,26 @@ export function WidgetEmbed({
 }) {
   useEffect(() => {
     if (!widgetKey) return;
-    if (document.getElementById("smartdesk-widget-script")) return;
+    const w = window as unknown as { __smartdeskCancelled?: boolean; __smartdeskDestroy?: () => void };
+    w.__smartdeskCancelled = false;
 
-    const s = document.createElement("script");
-    s.id = "smartdesk-widget-script";
-    s.src = "/smartdesk.js";
-    s.defer = true;
-    s.setAttribute("data-widget-key", widgetKey);
-    s.setAttribute("data-api-url", apiUrl);
-    document.body.appendChild(s);
+    if (!document.getElementById("smartdesk-widget-script")) {
+      const s = document.createElement("script");
+      s.id = "smartdesk-widget-script";
+      s.src = "/smartdesk.js";
+      s.defer = true;
+      s.setAttribute("data-widget-key", widgetKey);
+      s.setAttribute("data-api-url", apiUrl);
+      document.body.appendChild(s);
+    }
 
-    // The widget paints directly into <body>, outside React. Tear it all down on
-    // unmount so it stays confined to the page that embeds it (e.g. the landing
-    // page) instead of leaking into the dashboard via client-side navigation.
+    // The widget paints into <body>, outside React. On unmount: cancel any in-flight
+    // init (race-safe), tear down the painted DOM + styles, and drop the script so
+    // it re-runs cleanly when we return — keeping it confined to the landing page.
     return () => {
+      w.__smartdeskCancelled = true;
+      w.__smartdeskDestroy?.();
       document.getElementById("smartdesk-widget-script")?.remove();
-      document.getElementById("smartdesk-widget")?.remove();
-      document.getElementById("smartdesk-widget-style")?.remove();
     };
   }, [widgetKey, apiUrl]);
 

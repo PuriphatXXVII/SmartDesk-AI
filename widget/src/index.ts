@@ -54,6 +54,17 @@ function md(raw: string): string {
   return s;
 }
 
+// Host pages (e.g. the SPA landing page) can set `__smartdeskCancelled` and call
+// `__smartdeskDestroy()` to confine the widget to the page that embedded it.
+function cancelled(): boolean {
+  return Boolean((window as unknown as { __smartdeskCancelled?: boolean }).__smartdeskCancelled);
+}
+
+function destroyWidget(): void {
+  document.getElementById("smartdesk-widget")?.remove();
+  document.getElementById("smartdesk-widget-style")?.remove();
+}
+
 class SmartDeskWidget {
   private cfg: WidgetConfig = {
     primary_color: "#6366f1",
@@ -71,6 +82,8 @@ class SmartDeskWidget {
   async init() {
     this.restore();
     await this.loadConfig();
+    if (cancelled()) return; // host navigated away while the config was loading
+    destroyWidget(); // idempotent: never leave a duplicate/orphaned root behind
     this.root = document.createElement("div");
     this.root.id = "smartdesk-widget";
     document.body.appendChild(this.root);
@@ -322,12 +335,19 @@ function esc(s: string): string {
   return d.innerHTML;
 }
 
+(window as unknown as { __smartdeskDestroy?: () => void }).__smartdeskDestroy = destroyWidget;
+
+function boot(): void {
+  if (cancelled()) return;
+  destroyWidget();
+  new SmartDeskWidget().init();
+}
+
 if (WIDGET_KEY) {
-  const w = new SmartDeskWidget();
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => w.init());
+    document.addEventListener("DOMContentLoaded", boot);
   } else {
-    w.init();
+    boot();
   }
 } else {
   console.warn("[SmartDesk] missing data-widget-key on <script> tag");
