@@ -101,6 +101,17 @@ export default function ConversationsPage() {
     loadList();
   }, [callApi, selected, reloadDetail, loadList]);
 
+  // Near-realtime (dashboard side): poll the list + the open transcript every 3s so
+  // new visitor messages, new conversations, and status changes appear without a
+  // manual refresh. (The widget side already gets agent replies pushed live via WS.)
+  useEffect(() => {
+    const t = setInterval(() => {
+      loadList();
+      if (selected) reloadDetail(selected);
+    }, 3000);
+    return () => clearInterval(t);
+  }, [loadList, reloadDetail, selected]);
+
   return (
     <div className="min-h-screen bg-bg text-fg">
       <DashboardNav />
