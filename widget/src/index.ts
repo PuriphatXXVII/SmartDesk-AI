@@ -163,15 +163,18 @@ class SmartDeskWidget {
       .sd-form input:focus{border-color:${c}}
       .sd-form button{background:${c};color:#fff;border:none;border-radius:10px;padding:0 16px;cursor:pointer;font-weight:600}
       .sd-form button:disabled{opacity:.5}
-      .sd-intro{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:26px 20px;background:#f8fafc}
-      .sd-intro-greet{font-size:15px;color:#0f172a;line-height:1.5;margin-bottom:6px}
-      .sd-intro-l{font-size:13px;color:#475569;font-weight:600}
-      .sd-intro-l span{color:#94a3b8;font-weight:400}
-      .sd-intro-input{border:1px solid #d1d5db;border-radius:10px;padding:11px 12px;font-size:14px;color:#0f172a;background:#fff;outline:none}
-      .sd-intro-input:focus{border-color:${c}}
-      .sd-intro-start{background:${c};color:#fff;border:none;border-radius:10px;padding:11px;font-weight:600;cursor:pointer;font-size:14px;margin-top:4px}
-      .sd-intro-skip{background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer;padding:4px}
+      .sd-intro{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:9px;padding:24px 22px;background:radial-gradient(120% 80% at 50% 0%, ${c}14, #f8fafc 62%)}
+      .sd-intro-avatar{position:relative;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg, ${c}, ${c}bb);display:grid;place-items:center;margin-bottom:4px;box-shadow:0 10px 26px ${c}55;animation:sd-pop .4s cubic-bezier(.2,1.1,.6,1) both}
+      .sd-intro-dot{position:absolute;right:3px;bottom:3px;width:14px;height:14px;border-radius:50%;background:#22c55e;border:3px solid #f8fafc}
+      .sd-intro-title{font-size:19px;font-weight:700;color:#0f172a;line-height:1.3}
+      .sd-intro-sub{font-size:13px;color:#64748b;line-height:1.5;max-width:270px;margin-bottom:6px}
+      .sd-intro-input{width:100%;border:1px solid #d1d5db;border-radius:11px;padding:12px 14px;font-size:14px;color:#0f172a;background:#fff;outline:none;transition:border-color .12s,box-shadow .12s}
+      .sd-intro-input:focus{border-color:${c};box-shadow:0 0 0 3px ${c}22}
+      .sd-intro-start{width:100%;background:${c};color:#fff;border:none;border-radius:11px;padding:12px;font-weight:700;cursor:pointer;font-size:14px;box-shadow:0 6px 16px ${c}40;transition:filter .12s,transform .12s}
+      .sd-intro-start:hover{filter:brightness(1.07);transform:translateY(-1px)}
+      .sd-intro-skip{background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer;padding:2px}
       .sd-intro-skip:hover{color:#64748b}
+      @keyframes sd-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
       .sd-foot{text-align:center;font-size:11px;color:#64748b;padding:5px}
     `;
     document.head.appendChild(style);
@@ -207,9 +210,13 @@ class SmartDeskWidget {
       <div class="sd-panel">
         ${this.head()}
         <div class="sd-intro">
-          <div class="sd-intro-greet">${md(this.cfg.welcome_message)}</div>
-          <label class="sd-intro-l">Your name <span>(optional)</span></label>
-          <input class="sd-intro-input" type="text" placeholder="e.g. Alex" autocomplete="name" maxlength="60" />
+          <div class="sd-intro-avatar">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            <span class="sd-intro-dot"></span>
+          </div>
+          <div class="sd-intro-title">${md(this.cfg.welcome_message)}</div>
+          <div class="sd-intro-sub">Add your name for a more personal reply — or skip and start chatting right away.</div>
+          <input class="sd-intro-input" type="text" placeholder="Your name (optional)" autocomplete="name" maxlength="60" />
           <button class="sd-intro-start" type="button">Start chat →</button>
           <button class="sd-intro-skip" type="button">Skip for now</button>
         </div>
