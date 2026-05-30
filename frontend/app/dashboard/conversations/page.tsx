@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, ThumbsDown, ThumbsUp } from "lucide-react";
+import { CheckCircle2, MessageSquare, Send, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { DashboardNav } from "@/components/dashboard-nav";
@@ -51,27 +51,55 @@ export default function ConversationsPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [detail, setDetail] = useState<Detail | null>(null);
 
-  useEffect(() => {
-    let alive = true;
-    setRows(null);
-    callApi<ConvRow[]>(`/api/chat/conversations?range=${range}&status=${status}&limit=100`)
-      .then((r) => alive && setRows(r))
-      .catch(() => alive && setRows([]));
-    return () => {
-      alive = false;
-    };
+  const loadList = useCallback(async () => {
+    try {
+      setRows(await callApi<ConvRow[]>(`/api/chat/conversations?range=${range}&status=${status}&limit=100`));
+    } catch {
+      setRows([]);
+    }
   }, [callApi, range, status]);
+
+  useEffect(() => {
+    setRows(null);
+    loadList();
+  }, [loadList]);
+
+  const reloadDetail = useCallback(
+    (id: string) => callApi<Detail>(`/api/chat/conversations/${id}`).then(setDetail).catch(() => undefined),
+    [callApi],
+  );
 
   const open = useCallback(
     (id: string) => {
       setSelected(id);
       setDetail(null);
-      callApi<Detail>(`/api/chat/conversations/${id}`)
-        .then(setDetail)
-        .catch(() => setDetail(null));
+      reloadDetail(id);
     },
-    [callApi],
+    [reloadDetail],
   );
+
+  const reply = useCallback(
+    async (content: string) => {
+      if (!selected) return;
+      await callApi(`/api/chat/conversations/${selected}/reply`, {
+        method: "POST",
+        body: JSON.stringify({ content }),
+      });
+      await reloadDetail(selected);
+      loadList();
+    },
+    [callApi, selected, reloadDetail, loadList],
+  );
+
+  const resolve = useCallback(async () => {
+    if (!selected) return;
+    await callApi(`/api/chat/conversations/${selected}/status`, {
+      method: "POST",
+      body: JSON.stringify({ status: "resolved" }),
+    });
+    await reloadDetail(selected);
+    loadList();
+  }, [callApi, selected, reloadDetail, loadList]);
 
   return (
     <div className="min-h-screen bg-bg text-fg">
@@ -145,9 +173,9 @@ export default function ConversationsPage() {
           </div>
 
           {/* Transcript */}
-          <div className={`${CARD} min-h-[60vh] p-6`}>
+          <div className={`${CARD} flex min-h-[60vh] flex-col p-6`}>
             {!selected ? (
-              <div className="flex h-full flex-col items-center justify-center py-20 text-center text-subtle">
+              <div className="flex flex-1 flex-col items-center justify-center py-20 text-center text-subtle">
                 <span className="mb-3 grid h-12 w-12 place-items-center rounded-xl bg-indigo-500/15 text-brand-fg">
                   <MessageSquare className="h-6 w-6" />
                 </span>
@@ -160,7 +188,7 @@ export default function ConversationsPage() {
                 ))}
               </div>
             ) : (
-              <Transcript detail={detail} t={t} />
+              <Transcript detail={detail} t={t} onReply={reply} onResolve={resolve} />
             )}
           </div>
         </div>
@@ -169,7 +197,34 @@ export default function ConversationsPage() {
   );
 }
 
-function Transcript({ detail, t }: { detail: Detail; t: Messages }) {
+function Transcript({
+  detail,
+  t,
+  onReply,
+  onResolve,
+}: {
+  detail: Detail;
+  t: Messages;
+  onReply: (content: string) => Promise<void>;
+  onResolve: () => Promise<void>;
+}) {
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [resolving, setResolving] = useState(false);
+
+  async function send(e: React.FormEvent) {
+    e.preventDefault();
+    const c = text.trim();
+    if (!c || sending) return;
+    setSending(true);
+    try {
+      await onReply(c);
+      setText("");
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
     <>
       <div className="mb-5 flex items-center justify-between border-b border-line pb-4">
@@ -179,20 +234,55 @@ function Transcript({ detail, t }: { detail: Detail; t: Messages }) {
             {detail.created_at ? new Date(detail.created_at).toLocaleString() : ""}
           </div>
         </div>
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge(detail.status)}`}>
-          {detail.status === "handoff" ? t.dashboard.statusHandoff : t.dashboard.statusResolved}
-        </span>
-      </div>
-      <div className="space-y-4">
-        {detail.messages.map((m) =>
-          m.role === "user" ? (
-            <div
-              key={m.id}
-              className="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-white"
+        <div className="flex items-center gap-2">
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge(detail.status)}`}>
+            {detail.status === "handoff" ? t.dashboard.statusHandoff : t.dashboard.statusResolved}
+          </span>
+          {detail.status !== "resolved" && (
+            <button
+              onClick={async () => {
+                setResolving(true);
+                try {
+                  await onResolve();
+                } finally {
+                  setResolving(false);
+                }
+              }}
+              disabled={resolving}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold transition hover:bg-surface-2 disabled:opacity-50"
             >
-              {m.content}
-            </div>
-          ) : (
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              {t.conversations.resolve}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex-1 space-y-4 overflow-y-auto">
+        {detail.messages.map((m) => {
+          if (m.role === "user") {
+            return (
+              <div
+                key={m.id}
+                className="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-white"
+              >
+                {m.content}
+              </div>
+            );
+          }
+          if (m.role === "agent") {
+            return (
+              <div key={m.id} className="ml-auto max-w-[85%]">
+                <div className="mb-1 text-right text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                  {t.conversations.agent}
+                </div>
+                <div className="whitespace-pre-wrap rounded-2xl rounded-br-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-fg">
+                  {m.content}
+                </div>
+              </div>
+            );
+          }
+          return (
             <div key={m.id} className="max-w-[90%]">
               <div className="whitespace-pre-wrap rounded-2xl rounded-bl-md border border-line bg-surface-2 px-4 py-3 text-fg">
                 {m.content}
@@ -215,9 +305,27 @@ function Transcript({ detail, t }: { detail: Detail; t: Messages }) {
                 </div>
               )}
             </div>
-          ),
-        )}
+          );
+        })}
       </div>
+
+      {/* Agent reply composer */}
+      <form onSubmit={send} className="mt-4 flex gap-2 border-t border-line pt-4">
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={t.conversations.replyPlaceholder}
+          className="flex-1 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm text-fg placeholder:text-subtle outline-none transition focus:border-indigo-400/60"
+        />
+        <button
+          type="submit"
+          disabled={sending}
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50 disabled:opacity-50"
+        >
+          <Send className="h-4 w-4" />
+          {t.conversations.reply}
+        </button>
+      </form>
     </>
   );
 }

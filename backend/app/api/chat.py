@@ -8,9 +8,9 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.widget import org_by_widget_key
 from app.core.db import SessionLocal
-from app.core.deps import get_current_org, get_db
+from app.core.deps import get_current_org, get_current_user, get_db
 from app.core.security import detect_prompt_injection, limiter, sanitize_user_input
-from app.models import Conversation, Message, Organization
+from app.models import Conversation, Message, Organization, User
 from app.rag.pipeline import answer, answer_stream
 
 router = APIRouter()
@@ -59,6 +59,9 @@ def query(
             confidence=result.confidence,
         )
     )
+    # Auto-flag low-confidence answers for human review (Week 5 handoff).
+    if result.confidence < HANDOFF_THRESHOLD and conv.status == "active":
+        conv.status = "handoff"
     db.commit()
 
     return {
@@ -114,9 +117,10 @@ async def chat_socket(websocket: WebSocket) -> None:
 
 
 def _derive_status(conv: Conversation) -> str:
-    """A conversation needs a human if it was assigned/flagged or any AI answer was low-confidence."""
-    if conv.status == "handoff":
-        return "handoff"
+    """Explicit terminal status wins (agent resolved / handoff); otherwise derive
+    from answer confidence so legacy 'active' rows still surface low-confidence chats."""
+    if conv.status in ("resolved", "handoff"):
+        return conv.status
     for m in conv.messages:
         if m.role == "assistant" and m.confidence is not None and m.confidence < HANDOFF_THRESHOLD:
             return "handoff"
@@ -233,3 +237,64 @@ def submit_feedback(
     msg.feedback = None if body.value == "clear" else ("positive" if body.value == "positive" else "negative")
     db.commit()
     return {"ok": True, "feedback": msg.feedback}
+
+
+# --- Human handoff (Week 5): an agent takes over and replies / resolves -------
+
+class AgentReply(BaseModel):
+    content: str
+
+
+@router.post("/conversations/{conversation_id}/reply")
+@limiter.limit("60/minute")
+def agent_reply(
+    request: Request,
+    conversation_id: UUID,
+    body: AgentReply,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """A human agent posts a message into the conversation, taking it over from the AI."""
+    conv = db.get(Conversation, conversation_id)
+    if conv is None or conv.org_id != user.org_id:
+        raise HTTPException(status_code=404, detail="conversation not found")
+    content = sanitize_user_input(body.content, max_length=4000)
+    if not content:
+        raise HTTPException(status_code=422, detail="empty message")
+    msg = Message(conversation_id=conv.id, role="agent", content=content)
+    conv.assigned_agent_id = user.id
+    conv.status = "handoff"
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+    return {
+        "id": str(msg.id),
+        "role": "agent",
+        "content": msg.content,
+        "created_at": msg.created_at.isoformat() if msg.created_at else None,
+    }
+
+
+class StatusUpdate(BaseModel):
+    status: str  # active | handoff | resolved
+
+
+@router.post("/conversations/{conversation_id}/status")
+@limiter.limit("60/minute")
+def set_conversation_status(
+    request: Request,
+    conversation_id: UUID,
+    body: StatusUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    if body.status not in {"active", "handoff", "resolved"}:
+        raise HTTPException(status_code=422, detail="invalid status")
+    conv = db.get(Conversation, conversation_id)
+    if conv is None or conv.org_id != user.org_id:
+        raise HTTPException(status_code=404, detail="conversation not found")
+    conv.status = body.status
+    if body.status == "handoff":
+        conv.assigned_agent_id = user.id
+    db.commit()
+    return {"ok": True, "status": conv.status}

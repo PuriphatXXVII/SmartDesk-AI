@@ -80,14 +80,15 @@ Goal: Ship a **production-deployed, demoable MVP** that you can put on your port
 ## Week 5 — Human-in-the-Loop & Production-Readiness
 
 **Deliverables:**
-- [ ] Confidence scoring on responses (low conf → flag for review)
-- [ ] Human handoff: agent can join live conversation, take over from AI
-- [ ] Live conversations view (which chats are happening right now)
-- [ ] Multi-tenant isolation tests (org A cannot see org B data)
-- [ ] Rate limiting per org (token bucket via Redis)
-- [ ] Input/output guardrails (PII redaction, prompt injection mitigation)
-- [ ] Webhook system (conversation.started, message.low_confidence, etc.)
-- [ ] E2E test suite (Playwright for widget → backend → dashboard)
+- [x] Confidence scoring on responses (low conf → auto-flag conversation as `handoff`)
+- [x] Human handoff: agent takes over from the dashboard (reply as `agent`, resolve)
+- [x] Conversations view with status filter (resolved / handoff) — Week 4 + Week 5
+- [x] Multi-tenant isolation tests (org A cannot see/touch org B data) — `tests/test_handoff.py`
+- [ ] Rate limiting per org (token bucket via Redis) — deferred (Redis unavailable locally)
+- [x] Input/output guardrails (PII redaction, prompt-injection mitigation) — `security.py`
+- [ ] Webhook system (conversation.started, message.low_confidence, etc.) — deferred
+- [ ] E2E test suite (Playwright for widget → backend → dashboard) — deferred
+- [ ] Realtime agent→widget delivery (agent replies pushed live to the embedded widget) — deferred (needs broker)
 
 **Outcome:** Production-grade safety, security, and reliability.
 

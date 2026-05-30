@@ -118,6 +118,10 @@ const en = {
     messages: "messages",
     selectHint: "Select a conversation to view its transcript.",
     back: "Back",
+    agent: "Agent",
+    replyPlaceholder: "Reply as an agent…",
+    reply: "Send reply",
+    resolve: "Mark resolved",
   },
   chat: {
     title: "Test your AI",
@@ -305,6 +309,10 @@ const th: Messages = {
     messages: "ข้อความ",
     selectHint: "เลือกบทสนทนาเพื่อดูบทสนทนาแบบเต็ม",
     back: "ย้อนกลับ",
+    agent: "เจ้าหน้าที่",
+    replyPlaceholder: "ตอบในฐานะเจ้าหน้าที่…",
+    reply: "ส่งคำตอบ",
+    resolve: "ทำเครื่องหมายว่าแก้แล้ว",
   },
   chat: {
     title: "ทดสอบ AI ของคุณ",
