@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { Check, Copy, MessageSquare } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
+import { DashboardNav } from "@/components/dashboard-nav";
 import { useApi } from "@/lib/use-api";
 
 interface Settings {
@@ -14,6 +15,9 @@ interface Settings {
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const CARD = "rounded-2xl border border-white/10 bg-white/[0.03] p-6";
+const INPUT =
+  "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-indigo-400/60";
 
 export default function WidgetPage() {
   const callApi = useApi();
@@ -61,27 +65,29 @@ export default function WidgetPage() {
     : "";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <DashboardNav />
       <main className="mx-auto max-w-5xl px-6 py-8">
-        <h1 className="mb-1 text-3xl font-bold">Widget</h1>
-        <p className="mb-6 text-gray-500">Customize your embeddable chat widget and grab the install snippet.</p>
+        <h1 className="mb-1 text-3xl font-bold tracking-tight">Widget</h1>
+        <p className="mb-6 text-sm text-slate-400">
+          Customize your embeddable chat widget and grab the install snippet.
+        </p>
 
         {!s ? (
-          <p className="text-gray-400">loading…</p>
+          <p className="text-slate-500">loading…</p>
         ) : (
           <div className="grid gap-6 lg:grid-cols-2">
             {/* --- Settings --- */}
-            <div className="space-y-5 rounded-xl border bg-white p-6">
+            <div className={`space-y-5 ${CARD}`}>
               <Field label="Primary color">
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
                     value={s.primary_color}
                     onChange={(e) => setS({ ...s, primary_color: e.target.value })}
-                    className="h-10 w-14 cursor-pointer rounded border"
+                    className="h-10 w-14 cursor-pointer rounded-lg border border-white/10 bg-transparent"
                   />
-                  <span className="font-mono text-sm">{s.primary_color}</span>
+                  <span className="font-mono text-sm text-slate-300">{s.primary_color}</span>
                 </div>
               </Field>
 
@@ -89,10 +95,10 @@ export default function WidgetPage() {
                 <select
                   value={s.position}
                   onChange={(e) => setS({ ...s, position: e.target.value as Settings["position"] })}
-                  className="w-full rounded-lg border px-3 py-2"
+                  className={INPUT}
                 >
-                  <option value="bottom-right">Bottom right</option>
-                  <option value="bottom-left">Bottom left</option>
+                  <option className="bg-slate-900" value="bottom-right">Bottom right</option>
+                  <option className="bg-slate-900" value="bottom-left">Bottom left</option>
                 </select>
               </Field>
 
@@ -100,7 +106,7 @@ export default function WidgetPage() {
                 <input
                   value={s.welcome_message}
                   onChange={(e) => setS({ ...s, welcome_message: e.target.value })}
-                  className="w-full rounded-lg border px-3 py-2"
+                  className={INPUT}
                   maxLength={200}
                 />
               </Field>
@@ -109,44 +115,60 @@ export default function WidgetPage() {
                 <textarea
                   value={s.persona_prompt ?? ""}
                   onChange={(e) => setS({ ...s, persona_prompt: e.target.value })}
-                  className="h-24 w-full rounded-lg border px-3 py-2 text-sm"
+                  className={`${INPUT} h-24 text-sm`}
                   placeholder="e.g. Friendly, concise, replies in the customer's language."
                   maxLength={1000}
                 />
               </Field>
 
-              <button
-                onClick={save}
-                disabled={saving}
-                className="rounded-lg bg-brand px-5 py-2 font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
-              >
-                {saving ? "Saving…" : "Save changes"}
-              </button>
-              {saved && <span className="ml-3 text-sm text-green-600">✓ Saved</span>}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={save}
+                  disabled={saving}
+                  className="rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50 disabled:opacity-50"
+                >
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+                {saved && (
+                  <span className="inline-flex items-center gap-1 text-sm text-emerald-400">
+                    <Check className="h-4 w-4" /> Saved
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* --- Preview + snippet --- */}
             <div className="space-y-6">
-              <div className="rounded-xl border bg-white p-6">
-                <h2 className="mb-3 text-lg font-bold">Live preview</h2>
+              <div className={CARD}>
+                <h2 className="mb-3 text-lg font-semibold">Live preview</h2>
                 <WidgetPreview color={s.primary_color} welcome={s.welcome_message} />
               </div>
 
-              <div className="rounded-xl border bg-white p-6">
-                <h2 className="mb-1 text-lg font-bold">Install snippet</h2>
-                <p className="mb-3 text-sm text-gray-500">Paste before &lt;/body&gt; on your site.</p>
-                <pre className="overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-green-400">{snippet}</pre>
+              <div className={CARD}>
+                <h2 className="mb-1 text-lg font-semibold">Install snippet</h2>
+                <p className="mb-3 text-sm text-slate-400">Paste before &lt;/body&gt; on your site.</p>
+                <pre className="overflow-x-auto rounded-xl border border-white/10 bg-slate-950 p-3 text-xs leading-relaxed text-slate-300">
+                  {snippet}
+                </pre>
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(snippet);
                     setCopied(true);
                     setTimeout(() => setCopied(false), 1500);
                   }}
-                  className="mt-3 w-full rounded-lg bg-gray-100 py-2 text-sm font-semibold hover:bg-gray-200"
+                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2 text-sm font-semibold transition hover:bg-white/10"
                 >
-                  {copied ? "✓ Copied!" : "Copy snippet"}
+                  {copied ? (
+                    <>
+                      <Check className="h-4 w-4 text-emerald-400" /> Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" /> Copy snippet
+                    </>
+                  )}
                 </button>
-                <p className="mt-3 break-all text-xs text-gray-400">widget key: {s.widget_key}</p>
+                <p className="mt-3 break-all text-xs text-slate-500">widget key: {s.widget_key}</p>
               </div>
             </div>
           </div>
@@ -159,7 +181,7 @@ export default function WidgetPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
+      <label className="mb-1.5 block text-sm font-medium text-slate-300">{label}</label>
       {children}
     </div>
   );
@@ -167,46 +189,35 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function WidgetPreview({ color, welcome }: { color: string; welcome: string }) {
   return (
-    <div className="relative h-72 overflow-hidden rounded-lg border bg-gray-100">
-      <div className="absolute bottom-3 right-3 w-56 overflow-hidden rounded-xl border bg-white shadow-lg">
-        <div className="flex items-center justify-between p-2 text-white" style={{ background: color }}>
+    <div className="relative h-72 overflow-hidden rounded-xl border border-white/10 bg-slate-900">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-grid"
+        style={{ opacity: 0.4 }}
+      />
+      <div className="absolute bottom-3 right-3 w-56 overflow-hidden rounded-xl border border-black/5 bg-white text-slate-900 shadow-2xl">
+        <div className="flex items-center justify-between p-2.5 text-white" style={{ background: color }}>
           <span className="text-xs font-semibold">Support</span>
           <span className="text-xs">✕</span>
         </div>
         <div className="space-y-2 p-3">
-          <div className="max-w-[85%] rounded-lg border bg-white px-2 py-1 text-xs">{welcome}</div>
+          <div className="max-w-[85%] rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs">{welcome}</div>
         </div>
-        <div className="border-t p-2">
+        <div className="border-t border-slate-100 p-2">
           <div className="flex gap-1">
-            <div className="flex-1 rounded border px-2 py-1 text-xs text-gray-400">Type…</div>
-            <div className="rounded px-2 py-1 text-xs text-white" style={{ background: color }}>Send</div>
+            <div className="flex-1 rounded border border-slate-200 px-2 py-1 text-xs text-slate-400">Type…</div>
+            <div className="rounded px-2 py-1 text-xs text-white" style={{ background: color }}>
+              Send
+            </div>
           </div>
         </div>
       </div>
       <div
-        className="absolute bottom-3 right-3 flex h-12 w-12 translate-y-0 items-center justify-center rounded-full text-xl text-white shadow-lg"
-        style={{ background: color, right: "0.75rem", bottom: "0.75rem", display: "none" }}
+        className="absolute bottom-3 right-3 grid h-12 w-12 place-items-center rounded-full text-white shadow-lg"
+        style={{ background: color, display: "none" }}
       >
-        💬
+        <MessageSquare className="h-5 w-5" />
       </div>
     </div>
-  );
-}
-
-function Header() {
-  return (
-    <header className="border-b bg-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-xl font-bold">
-          🤖 SmartDesk <span className="text-brand">AI</span>
-        </Link>
-        <nav className="flex items-center gap-6 text-sm">
-          <Link href="/dashboard" className="text-gray-600 hover:text-brand">Dashboard</Link>
-          <Link href="/dashboard/chat" className="text-gray-600 hover:text-brand">Test Chat</Link>
-          <Link href="/dashboard/knowledge" className="text-gray-600 hover:text-brand">Knowledge</Link>
-          <span className="font-semibold text-brand">Widget</span>
-        </nav>
-      </div>
-    </header>
   );
 }

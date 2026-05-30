@@ -33,26 +33,26 @@ export function AccountInfo() {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="text-right">
+      <div className="hidden text-right sm:block">
         {me ? (
           <>
-            <div className="text-sm font-semibold">{me.organization.name}</div>
-            <div className="text-xs text-gray-500">
+            <div className="text-sm font-semibold text-slate-100">{me.organization.name}</div>
+            <div className="text-xs text-slate-400">
               {me.user.email} · {me.organization.plan}
             </div>
           </>
         ) : error ? (
-          <div className="text-xs text-red-500" title={error}>
+          <div className="text-xs text-red-400" title={error}>
             backend offline
           </div>
         ) : (
-          <div className="text-xs text-gray-400">loading…</div>
+          <div className="text-xs text-slate-500">loading…</div>
         )}
       </div>
       {clerkConfigured ? (
         <UserButton />
       ) : (
-        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand to-purple-500" />
+        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500" />
       )}
     </div>
   );
