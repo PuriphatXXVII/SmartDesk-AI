@@ -14,6 +14,7 @@ from app.core.realtime import hub
 from app.core.security import detect_prompt_injection, limiter, sanitize_user_input
 from app.models import Conversation, Message, Organization, User
 from app.rag.pipeline import answer, answer_stream
+from app.services.webhooks import notify
 
 router = APIRouter()
 
@@ -43,6 +44,7 @@ def query(
         conv = db.get(Conversation, body.conversation_id)
         if conv and conv.org_id != org.id:
             conv = None
+    created = conv is None
     if conv is None:
         conv = Conversation(org_id=org.id, status="active")
         db.add(conv)
@@ -65,6 +67,15 @@ def query(
     if result.confidence < HANDOFF_THRESHOLD and conv.status == "active":
         conv.status = "handoff"
     db.commit()
+
+    if created:
+        notify(org, "conversation.started", {"conversation_id": str(conv.id)})
+    if result.confidence < HANDOFF_THRESHOLD:
+        notify(
+            org,
+            "message.low_confidence",
+            {"conversation_id": str(conv.id), "confidence": result.confidence, "question": question},
+        )
 
     return {
         "conversation_id": str(conv.id),
@@ -130,6 +141,7 @@ async def chat_socket(websocket: WebSocket) -> None:
                 db.commit()
                 hub.subscribe(str(conv.id), out_q)
                 await out_q.put({"type": "session", "conversation_id": str(conv.id)})
+                notify(org, "conversation.started", {"conversation_id": str(conv.id)})
 
             if detect_prompt_injection(content):
                 await out_q.put({"type": "flagged", "reason": "suspicious_input"})
@@ -160,6 +172,9 @@ async def chat_socket(websocket: WebSocket) -> None:
             if confidence is not None and confidence < HANDOFF_THRESHOLD and conv.status == "active":
                 conv.status = "handoff"
             db.commit()
+            if confidence is not None and confidence < HANDOFF_THRESHOLD:
+                notify(org, "message.low_confidence",
+                       {"conversation_id": str(conv.id), "confidence": confidence})
     except WebSocketDisconnect:
         pass
     finally:
@@ -325,6 +340,9 @@ def agent_reply(
         str(conv.id),
         {"type": "agent", "content": msg.content, "message_id": str(msg.id)},
     )
+    org = db.get(Organization, conv.org_id)
+    if org is not None:
+        notify(org, "conversation.handoff", {"conversation_id": str(conv.id), "agent_id": str(user.id)})
     return {
         "id": str(msg.id),
         "role": "agent",

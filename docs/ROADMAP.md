@@ -86,9 +86,9 @@ Goal: Ship a **production-deployed, demoable MVP** that you can put on your port
 - [x] Multi-tenant isolation tests (org A cannot see/touch org B data) — `tests/test_handoff.py`
 - [ ] Rate limiting per org (token bucket via Redis) — deferred (Redis unavailable locally)
 - [x] Input/output guardrails (PII redaction, prompt-injection mitigation) — `security.py`
-- [ ] Webhook system (conversation.started, message.low_confidence, etc.) — deferred
+- [x] Webhook system (conversation.started, message.low_confidence, conversation.handoff) — HMAC-signed, `/api/settings`
 - [ ] E2E test suite (Playwright for widget → backend → dashboard) — deferred
-- [ ] Realtime agent→widget delivery (agent replies pushed live to the embedded widget) — deferred (needs broker)
+- [x] Realtime agent→widget delivery (agent replies pushed live via in-process pub/sub hub)
 
 **Outcome:** Production-grade safety, security, and reliability.
 

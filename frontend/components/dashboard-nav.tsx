@@ -17,6 +17,7 @@ export function DashboardNav() {
     { href: "/dashboard/chat", label: t.nav.chat },
     { href: "/dashboard/knowledge", label: t.nav.knowledge },
     { href: "/dashboard/widget", label: t.nav.widget },
+    { href: "/dashboard/settings", label: t.nav.settings },
   ];
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-xl">

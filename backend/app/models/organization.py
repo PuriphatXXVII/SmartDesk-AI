@@ -23,6 +23,9 @@ class Organization(Base, UUIDPrimaryKey, TimestampMixin):
     widget_key: Mapped[str] = mapped_column(
         String(64), unique=True, index=True, default=generate_widget_key
     )
+    # Outbound webhooks: org-configured endpoint + secret for HMAC signing (optional).
+    webhook_url: Mapped[str | None] = mapped_column(String(500))
+    webhook_secret: Mapped[str | None] = mapped_column(String(128))
 
     users: Mapped[list["User"]] = relationship(back_populates="organization")
 
