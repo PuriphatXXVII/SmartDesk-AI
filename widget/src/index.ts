@@ -39,6 +39,7 @@ class SmartDeskWidget {
   private ws: WebSocket | null = null;
   private open = false;
   private streamingEl: HTMLDivElement | null = null;
+  private conversationId: string | null = null;
 
   async init() {
     await this.loadConfig();
@@ -75,6 +76,8 @@ class SmartDeskWidget {
       .sd-msg{padding:10px 14px;border-radius:14px;margin-bottom:10px;max-width:85%;font-size:14px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
       .sd-bot{background:#fff;border:1px solid #e5e7eb;color:#0f172a}
       .sd-user{background:${c};color:#fff;margin-left:auto}
+      .sd-agent{background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46}
+      .sd-agent-label{font-size:11px;color:#059669;font-weight:600;margin:0 0 2px 4px}
       .sd-cite{font-size:11px;color:#64748b;margin:-4px 0 10px;padding-left:4px}
       .sd-conf{font-size:11px;color:#94a3b8;margin:-6px 0 10px;padding-left:4px}
       .sd-form{display:flex;gap:8px;border-top:1px solid #e5e7eb;padding:10px;background:#fff}
@@ -135,7 +138,13 @@ class SmartDeskWidget {
     }
   }
 
-  private onEvent(e: { type: string; content?: string; citations?: Citation[]; confidence?: number }) {
+  private onEvent(e: {
+    type: string;
+    content?: string;
+    citations?: Citation[];
+    confidence?: number;
+    conversation_id?: string;
+  }) {
     if (e.type === "token" && e.content) {
       if (!this.streamingEl) this.streamingEl = this.addBot("");
       this.streamingEl.textContent += e.content;
@@ -143,9 +152,23 @@ class SmartDeskWidget {
     } else if (e.type === "citations") {
       if (typeof e.confidence === "number") this.addConfidence(e.confidence);
       (e.citations ?? []).forEach((c, i) => this.addCite(i + 1, c));
+    } else if (e.type === "agent" && e.content) {
+      // A human support agent took over — render their reply distinctly, live.
+      this.streamingEl = null;
+      this.addAgent(e.content);
+    } else if (e.type === "session") {
+      this.conversationId = e.conversation_id ?? null;
     } else if (e.type === "error") {
       this.addBot(`⚠️ ${e.content ?? "Something went wrong."}`);
     }
+  }
+
+  private addAgent(t: string) {
+    const label = document.createElement("div");
+    label.className = "sd-agent-label";
+    label.textContent = "Agent";
+    this.msgs().appendChild(label);
+    this.append("sd-agent", t);
   }
 
   private addUser(t: string) {

@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta
 from uuid import UUID
 
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.api.widget import org_by_widget_key
 from app.core.db import SessionLocal
 from app.core.deps import get_current_org, get_current_user, get_db
+from app.core.realtime import hub
 from app.core.security import detect_prompt_injection, limiter, sanitize_user_input
 from app.models import Conversation, Message, Organization, User
 from app.rag.pipeline import answer, answer_stream
@@ -87,11 +89,23 @@ async def chat_socket(websocket: WebSocket) -> None:
     """Real-time streaming chat for the embeddable widget.
 
     Auth: the widget passes ?key=wk_xxx (public widget key) which maps to one org.
-    Each message runs the RAG pipeline and streams tokens back.
+    A conversation is persisted on the first message so it shows up in the dashboard
+    and an agent can take over — agent replies are pushed back here live via `hub`.
+    All outbound frames go through one queue + sender task so AI tokens and agent
+    messages can't interleave mid-send.
     """
     await websocket.accept()
 
     db: Session = SessionLocal()
+    conv: Conversation | None = None
+    out_q: asyncio.Queue = asyncio.Queue()
+
+    async def sender() -> None:
+        while True:
+            event = await out_q.get()
+            await websocket.send_json(event)
+
+    sender_task = asyncio.create_task(sender())
     try:
         org = org_by_widget_key(db, websocket.query_params.get("key", ""))
         if org is None:
@@ -103,16 +117,55 @@ async def chat_socket(websocket: WebSocket) -> None:
             data = await websocket.receive_json()
             content = sanitize_user_input(str(data.get("content", "")), max_length=2000)
             if not content:
-                await websocket.send_json({"type": "error", "message": "empty message"})
+                await out_q.put({"type": "error", "message": "empty message"})
                 continue
-            if detect_prompt_injection(content):
-                await websocket.send_json({"type": "flagged", "reason": "suspicious_input"})
 
+            # Persist the conversation lazily on the first real message (no empty rows).
+            if conv is None:
+                conv = Conversation(org_id=org.id, status="active")
+                db.add(conv)
+                db.commit()
+                db.refresh(conv)
+                conv.visitor_id = f"web-{str(conv.id)[:4]}"
+                db.commit()
+                hub.subscribe(str(conv.id), out_q)
+                await out_q.put({"type": "session", "conversation_id": str(conv.id)})
+
+            if detect_prompt_injection(content):
+                await out_q.put({"type": "flagged", "reason": "suspicious_input"})
+
+            db.add(Message(conversation_id=conv.id, role="user", content=content))
+            db.commit()
+
+            parts: list[str] = []
+            confidence: float | None = None
+            citations: list = []
             async for event in answer_stream(db, org.id, content):
-                await websocket.send_json(event)
+                if event.get("type") == "token":
+                    parts.append(event.get("content", ""))
+                elif event.get("type") == "citations":
+                    confidence = event.get("confidence")
+                    citations = event.get("citations", [])
+                await out_q.put(event)
+
+            db.add(
+                Message(
+                    conversation_id=conv.id,
+                    role="assistant",
+                    content="".join(parts),
+                    citations=citations,
+                    confidence=confidence,
+                )
+            )
+            if confidence is not None and confidence < HANDOFF_THRESHOLD and conv.status == "active":
+                conv.status = "handoff"
+            db.commit()
     except WebSocketDisconnect:
-        return
+        pass
     finally:
+        sender_task.cancel()
+        if conv is not None:
+            hub.unsubscribe(str(conv.id), out_q)
         db.close()
 
 
@@ -267,11 +320,17 @@ def agent_reply(
     db.add(msg)
     db.commit()
     db.refresh(msg)
+    # Push the agent reply to the visitor's widget in real time (if they're online).
+    delivered = hub.publish(
+        str(conv.id),
+        {"type": "agent", "content": msg.content, "message_id": str(msg.id)},
+    )
     return {
         "id": str(msg.id),
         "role": "agent",
         "content": msg.content,
         "created_at": msg.created_at.isoformat() if msg.created_at else None,
+        "delivered_live": delivered,
     }
 
 
