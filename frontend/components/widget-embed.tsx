@@ -28,6 +28,15 @@ export function WidgetEmbed({
     s.setAttribute("data-widget-key", widgetKey);
     s.setAttribute("data-api-url", apiUrl);
     document.body.appendChild(s);
+
+    // The widget paints directly into <body>, outside React. Tear it all down on
+    // unmount so it stays confined to the page that embeds it (e.g. the landing
+    // page) instead of leaking into the dashboard via client-side navigation.
+    return () => {
+      document.getElementById("smartdesk-widget-script")?.remove();
+      document.getElementById("smartdesk-widget")?.remove();
+      document.getElementById("smartdesk-widget-style")?.remove();
+    };
   }, [widgetKey, apiUrl]);
 
   return null;

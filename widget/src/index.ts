@@ -112,9 +112,11 @@ class SmartDeskWidget {
   }
 
   private injectStyles() {
+    if (document.getElementById("smartdesk-widget-style")) return;
     const c = this.cfg.primary_color;
     const side = this.cfg.position === "bottom-left" ? "left: 20px;" : "right: 20px;";
     const style = document.createElement("style");
+    style.id = "smartdesk-widget-style";
     style.textContent = `
       #smartdesk-widget{position:fixed;${side}bottom:20px;z-index:2147483000;font-family:system-ui,-apple-system,sans-serif}
       .sd-fab{width:60px;height:60px;border-radius:50%;background:${c};color:#fff;border:none;cursor:pointer;font-size:26px;box-shadow:0 6px 20px rgba(0,0,0,.18);transition:transform .15s}
