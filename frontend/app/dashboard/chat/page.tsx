@@ -134,13 +134,13 @@ export default function ChatPage() {
 function Bubble({ turn, t }: { turn: Turn; t: Messages }) {
   if (turn.role === "user") {
     return (
-      <div className="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-white shadow-lg shadow-indigo-500/20">
+      <div className="ml-auto max-w-[80%] animate-in fade-in slide-in-from-bottom-1 duration-200 rounded-2xl rounded-br-md bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-white shadow-lg shadow-indigo-500/20">
         {turn.content}
       </div>
     );
   }
   return (
-    <div className="max-w-[90%]">
+    <div className="max-w-[90%] animate-in fade-in slide-in-from-bottom-1 duration-200">
       <div className="whitespace-pre-wrap rounded-2xl rounded-bl-md border border-line bg-surface-2 px-4 py-3 text-fg">
         {turn.content}
       </div>

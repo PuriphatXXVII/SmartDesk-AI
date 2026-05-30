@@ -125,7 +125,7 @@ class SmartDeskWidget {
       .sd-head small{opacity:.85;font-size:12px;display:block}
       .sd-x{background:none;border:none;color:#fff;cursor:pointer;font-size:20px;line-height:1}
       .sd-msgs{flex:1;overflow-y:auto;padding:16px;background:#f8fafc}
-      .sd-msg{padding:10px 14px;border-radius:14px;margin-bottom:10px;max-width:85%;font-size:14px;line-height:1.55;word-wrap:break-word}
+      .sd-msg{padding:10px 14px;border-radius:14px;margin-bottom:10px;max-width:85%;font-size:14px;line-height:1.55;word-wrap:break-word;animation:sd-in .26s cubic-bezier(.21,1.02,.73,1) both}
       .sd-msg strong{font-weight:700}
       .sd-msg code{background:#e8edf3;padding:1px 5px;border-radius:5px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
       .sd-bot{background:#fff;border:1px solid #e5e7eb;color:#0f172a}
@@ -137,6 +137,7 @@ class SmartDeskWidget {
       .sd-typing span:nth-child(2){animation-delay:.15s}
       .sd-typing span:nth-child(3){animation-delay:.3s}
       @keyframes sd-bd{0%,70%,100%{transform:scale(.65);opacity:.4}35%{transform:scale(1);opacity:1}}
+      @keyframes sd-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
       .sd-cite{font-size:11px;color:#64748b;margin:-4px 0 10px;padding-left:4px}
       .sd-conf{font-size:11px;color:#94a3b8;margin:-6px 0 10px;padding-left:4px}
       .sd-form{display:flex;gap:8px;border-top:1px solid #e5e7eb;padding:10px;background:#fff}

@@ -15,7 +15,7 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "SmartDesk AI — AI-Powered Customer Support",
+    default: "SmartDesk AI",
     template: "%s · SmartDesk AI",
   },
   description:

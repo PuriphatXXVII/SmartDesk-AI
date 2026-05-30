@@ -275,7 +275,7 @@ function Transcript({
             return (
               <div
                 key={m.id}
-                className="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-white"
+                className="ml-auto max-w-[80%] animate-in fade-in slide-in-from-bottom-1 duration-200 rounded-2xl rounded-br-md bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-white"
               >
                 {m.content}
               </div>
@@ -283,7 +283,7 @@ function Transcript({
           }
           if (m.role === "agent") {
             return (
-              <div key={m.id} className="ml-auto max-w-[85%]">
+              <div key={m.id} className="ml-auto max-w-[85%] animate-in fade-in slide-in-from-bottom-1 duration-200">
                 <div className="mb-1 text-right text-xs font-medium text-emerald-600 dark:text-emerald-400">
                   {t.conversations.agent}
                 </div>
@@ -294,7 +294,7 @@ function Transcript({
             );
           }
           return (
-            <div key={m.id} className="max-w-[90%]">
+            <div key={m.id} className="max-w-[90%] animate-in fade-in slide-in-from-bottom-1 duration-200">
               <div className="whitespace-pre-wrap rounded-2xl rounded-bl-md border border-line bg-surface-2 px-4 py-3 text-fg">
                 {m.content}
               </div>

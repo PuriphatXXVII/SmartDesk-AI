@@ -9,20 +9,20 @@ export default function Icon() {
     (
       <div
         style={{
-          fontSize: 24,
           width: "100%",
           height: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #3b82f6, #1e40af)",
+          background: "linear-gradient(135deg, #6366f1, #a855f7)",
           borderRadius: 8,
           color: "white",
+          fontSize: 22,
           fontWeight: 800,
           fontFamily: "system-ui, sans-serif",
         }}
       >
-        🤖
+        S
       </div>
     ),
     { ...size },

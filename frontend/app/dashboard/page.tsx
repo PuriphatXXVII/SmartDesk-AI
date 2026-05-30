@@ -151,10 +151,12 @@ function ConversationsChart({
   const max = Math.max(1, ...counts);
   const w = 600;
   const h = 160;
-  const stepX = counts.length > 1 ? w / (counts.length - 1) : w;
-  const path = counts
-    .map((c, i) => `${i === 0 ? "M" : "L"} ${i * stepX} ${h - (c / max) * h}`)
-    .join(" ");
+  const padX = 30; // horizontal padding so first/last date labels aren't clipped
+  const padTop = 12;
+  const innerW = w - padX * 2;
+  const xAt = (i: number) => padX + (counts.length > 1 ? (i * innerW) / (counts.length - 1) : innerW / 2);
+  const yAt = (c: number) => padTop + (1 - c / max) * (h - padTop);
+  const path = counts.map((c, i) => `${i === 0 ? "M" : "L"} ${xAt(i).toFixed(1)} ${yAt(c).toFixed(1)}`).join(" ");
   const labelStep = Math.max(1, Math.ceil(counts.length / 7));
 
   return (
@@ -176,7 +178,7 @@ function ConversationsChart({
       {loading ? (
         <Skeleton className="h-44 w-full" />
       ) : (
-        <svg viewBox={`0 0 ${w} ${h + 24}`} className="w-full">
+        <svg viewBox={`0 0 ${w} ${h + 26}`} className="w-full">
           <defs>
             <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#6366f1" stopOpacity="0.35" />
@@ -187,16 +189,19 @@ function ConversationsChart({
               <stop offset="100%" stopColor="#a855f7" />
             </linearGradient>
           </defs>
-          {[0, 0.25, 0.5, 0.75, 1].map((g) => (
-            <line key={g} x1="0" x2={w} y1={h * g} y2={h * g} stroke="rgba(148,163,184,0.18)" strokeWidth="1" />
-          ))}
-          {counts.length > 0 && <path d={`${path} L ${w} ${h} L 0 ${h} Z`} fill="url(#area)" />}
+          {[0, 0.25, 0.5, 0.75, 1].map((g) => {
+            const gy = padTop + (h - padTop) * g;
+            return <line key={g} x1={padX} x2={w - padX} y1={gy} y2={gy} stroke="rgba(148,163,184,0.18)" strokeWidth="1" />;
+          })}
+          {counts.length > 0 && (
+            <path d={`${path} L ${xAt(counts.length - 1).toFixed(1)} ${h} L ${xAt(0).toFixed(1)} ${h} Z`} fill="url(#area)" />
+          )}
           {counts.length > 0 && (
             <path d={path} fill="none" stroke="url(#stroke)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           )}
           {series.map((p, i) =>
             i % labelStep === 0 ? (
-              <text key={p.day} x={i * stepX} y={h + 18} fill="#94a3b8" fontSize="11" textAnchor="middle">
+              <text key={p.day} x={xAt(i).toFixed(1)} y={h + 20} fill="#94a3b8" fontSize="11" textAnchor="middle">
                 {p.day.slice(5)}
               </text>
             ) : null,
