@@ -4,11 +4,13 @@ import { useAuth, UserButton } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 
 import { api, type MeResponse } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 
 const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export function AccountInfo() {
   const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { t } = useI18n();
   const [me, setMe] = useState<MeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,17 +38,17 @@ export function AccountInfo() {
       <div className="hidden text-right sm:block">
         {me ? (
           <>
-            <div className="text-sm font-semibold text-slate-100">{me.organization.name}</div>
-            <div className="text-xs text-slate-400">
+            <div className="text-sm font-semibold text-fg">{me.organization.name}</div>
+            <div className="text-xs text-muted">
               {me.user.email} · {me.organization.plan}
             </div>
           </>
         ) : error ? (
-          <div className="text-xs text-red-400" title={error}>
-            backend offline
+          <div className="text-xs text-red-500 dark:text-red-400" title={error}>
+            {t.account.offline}
           </div>
         ) : (
-          <div className="text-xs text-slate-500">loading…</div>
+          <div className="text-xs text-subtle">{t.account.loading}</div>
         )}
       </div>
       {clerkConfigured ? (

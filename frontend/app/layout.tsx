@@ -2,6 +2,12 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+import { Providers } from "@/components/providers";
+
+// Runs before paint: applies the saved theme (default dark) + language to <html>
+// so there's no light/dark flash and the lang attribute is correct on first paint.
+const initScript = `(function(){try{var t=localStorage.getItem('theme')||'dark';if(t==='dark'){document.documentElement.classList.add('dark');}var l=localStorage.getItem('lang')||'en';document.documentElement.setAttribute('lang',l);}catch(e){}})();`;
+
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
@@ -52,8 +58,11 @@ const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const body = (
-    <html lang="en">
-      <body className="min-h-screen antialiased">{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen antialiased">
+        <script dangerouslySetInnerHTML={{ __html: initScript }} />
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 
