@@ -66,7 +66,7 @@ class SmartDeskWidget {
       #smartdesk-widget{position:fixed;${side}bottom:20px;z-index:2147483000;font-family:system-ui,-apple-system,sans-serif}
       .sd-fab{width:60px;height:60px;border-radius:50%;background:${c};color:#fff;border:none;cursor:pointer;font-size:26px;box-shadow:0 6px 20px rgba(0,0,0,.18);transition:transform .15s}
       .sd-fab:hover{transform:scale(1.05)}
-      .sd-panel{width:370px;max-width:calc(100vw - 40px);height:560px;max-height:calc(100vh - 40px);background:#fff;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.22)}
+      .sd-panel{width:370px;max-width:calc(100vw - 40px);height:560px;max-height:calc(100vh - 40px);background:#fff;color:#0f172a;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.22)}
       .sd-head{background:${c};color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}
       .sd-head b{font-size:15px}
       .sd-head small{opacity:.85;font-size:12px;display:block}
@@ -78,7 +78,8 @@ class SmartDeskWidget {
       .sd-cite{font-size:11px;color:#64748b;margin:-4px 0 10px;padding-left:4px}
       .sd-conf{font-size:11px;color:#94a3b8;margin:-6px 0 10px;padding-left:4px}
       .sd-form{display:flex;gap:8px;border-top:1px solid #e5e7eb;padding:10px;background:#fff}
-      .sd-form input{flex:1;border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;outline:none;font-size:14px}
+      .sd-form input{flex:1;border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;outline:none;font-size:14px;color:#0f172a;background:#fff}
+      .sd-form input::placeholder{color:#9ca3af;opacity:1}
       .sd-form input:focus{border-color:${c}}
       .sd-form button{background:${c};color:#fff;border:none;border-radius:10px;padding:0 16px;cursor:pointer;font-weight:600}
       .sd-form button:disabled{opacity:.5}
