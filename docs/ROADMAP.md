@@ -63,15 +63,15 @@ Goal: Ship a **production-deployed, demoable MVP** that you can put on your port
 ## Week 4 — Dashboard Polish & Analytics
 
 **Deliverables:**
-- [ ] Conversations view: list, filter by date/status, full transcript view
-- [ ] Analytics dashboard:
-  - Total conversations, messages, avg response time
-  - Top questions (clustered)
-  - Satisfaction (thumbs up/down on messages)
-  - Confidence distribution (where AI struggled)
-- [ ] Widget customization page (color, position, welcome message, persona prompt)
-- [ ] Team members invite (multi-user per org)
-- [ ] Settings: API keys, webhook URLs
+- [x] Conversations view: list, filter by date/status, full transcript view (`/dashboard/conversations`)
+- [x] Analytics dashboard (real data):
+  - [x] Total conversations, messages, avg confidence
+  - [ ] Top questions (clustered) — deferred (needs clustering)
+  - [x] Satisfaction (thumbs up/down on messages) — `feedback` field + `POST /api/chat/feedback`
+  - [x] Confidence-based auto-resolved % + daily series chart
+- [x] Widget customization page (done in Week 3)
+- [ ] Team members invite (multi-user per org) — Week 5
+- [ ] Settings: API keys, webhook URLs — Week 5
 
 **Outcome:** Dashboard feels like a real product. Recruiter clicking around sees substance.
 

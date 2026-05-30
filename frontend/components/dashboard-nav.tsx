@@ -13,6 +13,7 @@ export function DashboardNav() {
   const { t } = useI18n();
   const links = [
     { href: "/dashboard", label: t.nav.dashboard },
+    { href: "/dashboard/conversations", label: t.nav.conversations },
     { href: "/dashboard/chat", label: t.nav.chat },
     { href: "/dashboard/knowledge", label: t.nav.knowledge },
     { href: "/dashboard/widget", label: t.nav.widget },

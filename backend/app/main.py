@@ -9,7 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.api import auth, chat, health, knowledge, webhooks, widget
+from app.api import analytics, auth, chat, health, knowledge, webhooks, widget
 from app.core.config import get_settings
 from app.core.security import limiter
 
@@ -110,5 +110,6 @@ app.include_router(health.router, tags=["health"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(knowledge.router, prefix="/api/knowledge", tags=["knowledge"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
 app.include_router(widget.router, prefix="/api/widget", tags=["widget"])
 app.include_router(webhooks.router, prefix="/api/webhooks", tags=["webhooks"])

@@ -1,9 +1,10 @@
+from datetime import datetime, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.api.widget import org_by_widget_key
 from app.core.db import SessionLocal
@@ -13,6 +14,8 @@ from app.models import Conversation, Message, Organization
 from app.rag.pipeline import answer, answer_stream
 
 router = APIRouter()
+
+HANDOFF_THRESHOLD = 0.4
 
 
 class QueryRequest(BaseModel):
@@ -110,25 +113,123 @@ async def chat_socket(websocket: WebSocket) -> None:
         db.close()
 
 
+def _derive_status(conv: Conversation) -> str:
+    """A conversation needs a human if it was assigned/flagged or any AI answer was low-confidence."""
+    if conv.status == "handoff":
+        return "handoff"
+    for m in conv.messages:
+        if m.role == "assistant" and m.confidence is not None and m.confidence < HANDOFF_THRESHOLD:
+            return "handoff"
+    return "resolved"
+
+
+def _last_confidence(conv: Conversation) -> float | None:
+    for m in reversed(conv.messages):
+        if m.role == "assistant" and m.confidence is not None:
+            return round(m.confidence, 3)
+    return None
+
+
+def _preview(conv: Conversation) -> str:
+    for m in conv.messages:
+        if m.role == "user" and m.content:
+            return m.content[:120]
+    return conv.messages[0].content[:120] if conv.messages else ""
+
+
 @router.get("/conversations")
 @limiter.limit("60/minute")
 def list_conversations(
     request: Request,
+    window: str = Query("7d", alias="range", pattern="^(7d|30d|all)$"),
+    status: str = Query("all", pattern="^(all|resolved|handoff)$"),
+    limit: int = Query(50, ge=1, le=200),
     org: Organization = Depends(get_current_org),
     db: Session = Depends(get_db),
 ) -> list[dict]:
-    convs = db.scalars(
+    stmt = (
         select(Conversation)
         .where(Conversation.org_id == org.id)
+        .options(selectinload(Conversation.messages))
         .order_by(Conversation.updated_at.desc())
-        .limit(50)
-    ).all()
-    return [
-        {
-            "id": str(c.id),
-            "status": c.status,
-            "created_at": c.created_at.isoformat() if c.created_at else None,
-            "message_count": len(c.messages),
-        }
-        for c in convs
-    ]
+    )
+    if window != "all":
+        cutoff = datetime.utcnow() - timedelta(days=30 if window == "30d" else 7)
+        stmt = stmt.where(Conversation.created_at >= cutoff)
+
+    out: list[dict] = []
+    for c in db.scalars(stmt):
+        st = _derive_status(c)
+        if status != "all" and st != status:
+            continue
+        out.append(
+            {
+                "id": str(c.id),
+                "visitor": c.visitor_id or f"anon-{str(c.id)[:4]}",
+                "preview": _preview(c),
+                "status": st,
+                "confidence": _last_confidence(c),
+                "message_count": len(c.messages),
+                "created_at": c.created_at.isoformat() if c.created_at else None,
+                "last_at": c.updated_at.isoformat() if c.updated_at else None,
+            }
+        )
+        if len(out) >= limit:
+            break
+    return out
+
+
+@router.get("/conversations/{conversation_id}")
+@limiter.limit("120/minute")
+def get_conversation(
+    request: Request,
+    conversation_id: UUID,
+    org: Organization = Depends(get_current_org),
+    db: Session = Depends(get_db),
+) -> dict:
+    conv = db.get(Conversation, conversation_id)
+    if conv is None or conv.org_id != org.id:
+        raise HTTPException(status_code=404, detail="conversation not found")
+    return {
+        "id": str(conv.id),
+        "visitor": conv.visitor_id or f"anon-{str(conv.id)[:4]}",
+        "status": _derive_status(conv),
+        "created_at": conv.created_at.isoformat() if conv.created_at else None,
+        "messages": [
+            {
+                "id": str(m.id),
+                "role": m.role,
+                "content": m.content,
+                "citations": m.citations or [],
+                "confidence": round(m.confidence, 3) if m.confidence is not None else None,
+                "feedback": m.feedback,
+                "created_at": m.created_at.isoformat() if m.created_at else None,
+            }
+            for m in conv.messages
+        ],
+    }
+
+
+class FeedbackRequest(BaseModel):
+    message_id: UUID
+    value: str  # "positive" | "negative" | "clear"
+
+
+@router.post("/feedback")
+@limiter.limit("60/minute")
+def submit_feedback(
+    request: Request,
+    body: FeedbackRequest,
+    org: Organization = Depends(get_current_org),
+    db: Session = Depends(get_db),
+) -> dict:
+    msg = db.get(Message, body.message_id)
+    if msg is not None:
+        conv = db.get(Conversation, msg.conversation_id)
+        if conv is None or conv.org_id != org.id:
+            msg = None
+    if msg is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    msg.feedback = None if body.value == "clear" else ("positive" if body.value == "positive" else "negative")
+    db.commit()
+    return {"ok": True, "feedback": msg.feedback}
