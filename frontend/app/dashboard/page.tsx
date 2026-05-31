@@ -19,6 +19,7 @@ import { DashboardNav } from "@/components/dashboard-nav";
 import { type MeResponse } from "@/lib/api";
 import { useI18n, type Messages } from "@/lib/i18n";
 import { useApi } from "@/lib/use-api";
+import { WIDGET_SRC } from "@/lib/widget";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const CARD = "rounded-2xl border border-line bg-surface p-6";
@@ -375,7 +376,7 @@ function WidgetEmbedCard({ t }: { t: Messages }) {
   }, [callApi]);
 
   const snippet = `<script
-  src="https://cdn.smartdesk.ai/smartdesk.js"
+  src="${WIDGET_SRC}"
   data-widget-key="${key ?? "wk_xxx"}"
   data-api-url="${API_URL}"
   defer

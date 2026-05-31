@@ -42,8 +42,9 @@ redis_data/
 # Uploaded documents (local storage; S3/R2 in prod)
 backend/uploads/
 
-# Local widget demo artifacts (contain a dev widget_key + build copy)
-frontend/public/smartdesk.js
+# Local widget demo page contains a dev widget_key — keep it out of git.
+# (frontend/public/smartdesk.js IS committed so the deployed site can serve the
+#  embeddable widget at <origin>/smartdesk.js — rebuild + commit it on changes.)
 frontend/public/widget-demo.html
 widget/dist/
 

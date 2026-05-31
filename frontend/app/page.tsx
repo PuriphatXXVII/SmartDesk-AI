@@ -22,6 +22,7 @@ import {
 import { LangToggle, ThemeToggle } from "@/components/toggles";
 import { WidgetEmbed } from "@/components/widget-embed";
 import { useI18n } from "@/lib/i18n";
+import { WIDGET_SRC } from "@/lib/widget";
 
 const DEMO_WIDGET_KEY = process.env.NEXT_PUBLIC_DEMO_WIDGET_KEY ?? "";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -296,7 +297,7 @@ function Demo() {
               {"\n  "}
               <span className="text-violet-300">src</span>
               <span className="text-slate-500">=</span>
-              <span className="text-emerald-300">{'"https://cdn.smartdesk.ai/smartdesk.js"'}</span>
+              <span className="text-emerald-300">{`"${WIDGET_SRC}"`}</span>
               {"\n  "}
               <span className="text-violet-300">data-widget-key</span>
               <span className="text-slate-500">=</span>

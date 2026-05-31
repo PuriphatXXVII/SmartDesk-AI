@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { useI18n } from "@/lib/i18n";
 import { useApi } from "@/lib/use-api";
+import { WIDGET_SRC } from "@/lib/widget";
 
 interface Settings {
   widget_key: string;
@@ -61,7 +62,7 @@ export default function WidgetPage() {
 
   const snippet = s
     ? `<script
-  src="https://cdn.smartdesk.ai/smartdesk.js"
+  src="${WIDGET_SRC}"
   data-widget-key="${s.widget_key}"
   data-api-url="${API_URL}"
   defer
