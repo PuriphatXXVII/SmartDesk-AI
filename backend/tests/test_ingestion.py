@@ -1,8 +1,20 @@
 """Unit tests for the ingestion building blocks (no DB / no network)."""
 
+import pytest
+
+from app.services import embeddings as _embeddings
 from app.services.chunking import chunk_text
 from app.services.embeddings import EMBEDDING_DIM, embed_query, embed_texts
 from app.services.parsing import extract_text
+
+
+@pytest.fixture(autouse=True)
+def _force_keyless_embeddings(monkeypatch):  # noqa: ANN001
+    """These are offline unit tests — pin embeddings to the keyless deterministic
+    fallback so a real provider key in a local .env can't pull them onto the network."""
+    monkeypatch.setattr(_embeddings, "_has_voyage", lambda: False)
+    monkeypatch.setattr(_embeddings, "_has_openai", lambda: False)
+
 
 # --- parsing ---
 
