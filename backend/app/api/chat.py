@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
@@ -240,7 +240,7 @@ def list_conversations(
         .order_by(Conversation.updated_at.desc())
     )
     if window != "all":
-        cutoff = datetime.utcnow() - timedelta(days=30 if window == "30d" else 7)
+        cutoff = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=30 if window == "30d" else 7)
         stmt = stmt.where(Conversation.created_at >= cutoff)
 
     out: list[dict] = []

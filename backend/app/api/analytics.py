@@ -4,7 +4,7 @@ All figures are aggregated in SQL and scoped to the authenticated org. The daily
 series is bucketed in Python (portable across Postgres/SQLite, bounded date range).
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy import case, func, select
@@ -33,7 +33,7 @@ def overview(
 ) -> dict:
     days = _range_days(window)
     # Bucket from midnight of the first day so the series has exactly `days` points.
-    today = datetime.utcnow().date()
+    today = datetime.now(UTC).date()
     start_day = today - timedelta(days=days - 1)
     cutoff = datetime(start_day.year, start_day.month, start_day.day)
 
