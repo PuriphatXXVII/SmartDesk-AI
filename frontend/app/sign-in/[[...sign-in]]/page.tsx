@@ -15,14 +15,14 @@ function AuthShell({ children }: { children: React.ReactNode }) {
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid bg-grid-fade" />
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[680px] -translate-x-1/2 rounded-full bg-indigo-600/25 blur-[130px]"
+        className="pointer-events-none absolute left-1/2 top-0 h-105 w-170 -translate-x-1/2 rounded-full bg-indigo-600/25 blur-[130px]"
       />
       <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
         <LangToggle />
         <ThemeToggle />
       </div>
       <Link href="/" className="relative z-10 mb-8 flex items-center gap-2.5">
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30">
+        <span className="grid h-9 w-9 place-items-center rounded-xl bg-linear-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30">
           <Bot className="h-5 w-5 text-white" strokeWidth={2.2} />
         </span>
         <span className="text-lg font-semibold tracking-tight">

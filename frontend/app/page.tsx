@@ -46,7 +46,7 @@ export default function LandingPage() {
 function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2.5">
-      <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30">
+      <span className="grid h-9 w-9 place-items-center rounded-xl bg-linear-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30">
         <Bot className="h-5 w-5 text-white" strokeWidth={2.2} />
       </span>
       <span className="text-lg font-semibold tracking-tight">
@@ -90,7 +90,7 @@ function Hero() {
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid bg-grid-fade" />
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 -top-48 h-[620px] w-[920px] -translate-x-1/2 rounded-full bg-indigo-600/25 blur-[140px]"
+        className="pointer-events-none absolute left-1/2 -top-48 h-155 w-230 -translate-x-1/2 rounded-full bg-indigo-600/25 blur-[140px]"
       />
       <div className="relative mx-auto flex max-w-4xl flex-col items-center px-4 py-28 text-center">
         <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-1.5 text-sm text-muted backdrop-blur">
@@ -105,7 +105,7 @@ function Hero() {
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <Link
             href="/sign-up"
-            className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-7 py-3.5 font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50"
+            className="group inline-flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-indigo-500 to-violet-500 px-7 py-3.5 font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50"
           >
             {t.hero.ctaPrimary}
             <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
@@ -157,7 +157,7 @@ function Features() {
                 key={it.title}
                 className="group rounded-2xl border border-line bg-surface p-6 transition hover:border-indigo-400/40 hover:bg-surface-2"
               >
-                <span className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 ring-1 ring-inset ring-line">
+                <span className="grid h-12 w-12 place-items-center rounded-xl bg-linear-to-br from-indigo-500/20 to-violet-500/20 ring-1 ring-inset ring-line">
                   <Icon className="h-6 w-6 text-brand-fg" />
                 </span>
                 <h3 className="mt-5 text-lg font-semibold">{it.title}</h3>
@@ -187,7 +187,7 @@ function HowItWorks() {
                 <span className="absolute right-6 top-6 text-5xl font-bold text-fg/5">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-linear-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30">
                   <Icon className="h-5 w-5 text-white" />
                 </span>
                 <h3 className="mt-5 text-lg font-semibold">{s.title}</h3>
@@ -213,7 +213,7 @@ function Pricing() {
             return highlight ? (
               <div
                 key={tier.name}
-                className="rounded-2xl bg-gradient-to-b from-indigo-500 to-violet-500 p-[1.5px] shadow-2xl shadow-indigo-500/25"
+                className="rounded-2xl bg-linear-to-b from-indigo-500 to-violet-500 p-[1.5px] shadow-2xl shadow-indigo-500/25"
               >
                 <div className="h-full rounded-2xl bg-bg p-8">
                   <PriceBody tier={tier} highlight popular={t.pricing.popular} />
@@ -239,7 +239,7 @@ function PriceBody({ tier, highlight, popular }: { tier: Tier; highlight: boolea
       <div className="flex items-center justify-between">
         <span className="text-lg font-semibold">{tier.name}</span>
         {highlight && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-3 py-1 text-xs font-semibold text-white">
+          <span className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-indigo-500 to-violet-500 px-3 py-1 text-xs font-semibold text-white">
             <Zap className="h-3 w-3" />
             {popular}
           </span>
@@ -261,7 +261,7 @@ function PriceBody({ tier, highlight, popular }: { tier: Tier; highlight: boolea
         href="/sign-up"
         className={`mt-8 block rounded-xl px-4 py-3 text-center text-sm font-semibold transition ${
           highlight
-            ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50"
+            ? "bg-linear-to-r from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50"
             : "border border-line bg-surface text-fg hover:bg-surface-2"
         }`}
       >
@@ -285,7 +285,7 @@ function Demo() {
           {live ? t.demo.bodyLive : t.demo.bodyIdle}
         </p>
         <div className="mx-auto mt-10 max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-slate-950 text-left shadow-2xl">
-          <div className="flex items-center gap-2 border-b border-white/10 bg-white/[0.03] px-4 py-2.5">
+          <div className="flex items-center gap-2 border-b border-white/10 bg-white/3 px-4 py-2.5">
             <span className="h-3 w-3 rounded-full bg-red-400/80" />
             <span className="h-3 w-3 rounded-full bg-yellow-400/80" />
             <span className="h-3 w-3 rounded-full bg-green-400/80" />
@@ -326,10 +326,10 @@ function CtaBand() {
   const { t } = useI18n();
   return (
     <section className="py-28">
-      <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-indigo-500/30 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 px-6 py-20 text-center">
+      <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-indigo-500/30 bg-linear-to-br from-indigo-600 via-indigo-700 to-violet-700 px-6 py-20 text-center">
         <div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-1/2 h-80 w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-[120px]"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-80 w-144 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-[120px]"
         />
         <div className="relative">
           <h2 className="text-balance text-4xl font-bold tracking-tight text-white md:text-5xl">

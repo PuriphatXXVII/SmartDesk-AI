@@ -32,5 +32,9 @@
     "**/.venv": true,
     "**/dist": true,
     "**/package-lock.json": true
-  }
+  },
+  "// css": "Tailwind v4 directives (@theme, @custom-variant, @apply, @utility) are valid CSS the built-in VS Code validator doesn't recognise; silence those false positives.",
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore",
+  "less.lint.unknownAtRules": "ignore"
 }

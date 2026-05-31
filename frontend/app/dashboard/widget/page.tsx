@@ -128,7 +128,7 @@ export default function WidgetPage() {
                 <button
                   onClick={save}
                   disabled={saving}
-                  className="rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50 disabled:opacity-50"
+                  className="rounded-xl bg-linear-to-r from-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50 disabled:opacity-50"
                 >
                   {saving ? t.widget.saving : t.widget.save}
                 </button>

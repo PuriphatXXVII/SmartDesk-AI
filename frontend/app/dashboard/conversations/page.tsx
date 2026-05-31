@@ -290,7 +290,7 @@ function Transcript({
             return (
               <div
                 key={m.id}
-                className="ml-auto max-w-[80%] animate-in fade-in slide-in-from-bottom-1 duration-200 rounded-2xl rounded-br-md bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-white"
+                className="ml-auto max-w-[80%] animate-in fade-in slide-in-from-bottom-1 duration-200 rounded-2xl rounded-br-md bg-linear-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-white"
               >
                 {m.content}
               </div>
@@ -346,7 +346,7 @@ function Transcript({
         <button
           type="submit"
           disabled={sending}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50 disabled:opacity-50"
         >
           <Send className="h-4 w-4" />
           {t.conversations.reply}

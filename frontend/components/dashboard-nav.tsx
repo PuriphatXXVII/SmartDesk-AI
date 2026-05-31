@@ -23,7 +23,7 @@ export function DashboardNav() {
     <header className="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-linear-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30">
             <Bot className="h-4 w-4 text-white" strokeWidth={2.2} />
           </span>
           <span className="font-semibold tracking-tight">
