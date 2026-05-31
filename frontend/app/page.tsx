@@ -329,7 +329,7 @@ function CtaBand() {
       <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-indigo-500/30 bg-linear-to-br from-indigo-600 via-indigo-700 to-violet-700 px-6 py-20 text-center">
         <div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-1/2 h-80 w-144 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-[120px]"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-80 w-xl -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-[120px]"
         />
         <div className="relative">
           <h2 className="text-balance text-4xl font-bold tracking-tight text-white md:text-5xl">
