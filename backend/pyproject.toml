@@ -41,7 +41,6 @@ dependencies = [
 
     # Security / hardening
     "slowapi>=0.1.9",             # rate limiting (custom security headers via Starlette middleware in app/main.py)
-    "bleach>=6.1.0",              # HTML/XSS sanitization
 
     # Observability
     "sentry-sdk[fastapi]>=2.18.0",

@@ -68,14 +68,23 @@ async def upload_document(
     org: Organization = Depends(get_current_org),
     db: Session = Depends(get_db),
 ) -> dict:
-    raw = await file.read()
-
     max_bytes = settings.max_upload_mb * 1024 * 1024
-    if len(raw) > max_bytes:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large (max {settings.max_upload_mb}MB)",
-        )
+    too_large = HTTPException(
+        status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+        detail=f"File too large (max {settings.max_upload_mb}MB)",
+    )
+    # Reject by declared size first, then read in chunks with a hard cap so a
+    # huge (or size-spoofed) upload can't be buffered fully into memory.
+    if file.size is not None and file.size > max_bytes:
+        raise too_large
+    chunks: list[bytes] = []
+    total = 0
+    while chunk := await file.read(1024 * 1024):
+        total += len(chunk)
+        if total > max_bytes:
+            raise too_large
+        chunks.append(chunk)
+    raw = b"".join(chunks)
 
     ext = ""
     if file.filename and "." in file.filename:

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import re
 
-import bleach
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from starlette.requests import Request
 
 from app.core.config import get_settings
 
@@ -21,8 +21,18 @@ _limiter_storage_uri = (
     settings.redis_url if settings.app_env == "production" else "memory://"
 )
 
+
+def _client_ip(request: Request) -> str:
+    """Real client IP, honouring the proxy's X-Forwarded-For (Railway/Vercel set it)
+    so per-client rate limits aren't all keyed to the load balancer's address."""
+    fwd = request.headers.get("x-forwarded-for")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return get_remote_address(request)
+
+
 limiter = Limiter(
-    key_func=get_remote_address,
+    key_func=_client_ip,
     storage_uri=_limiter_storage_uri,
     default_limits=[f"{settings.rate_limit_per_minute}/minute"],
 )
@@ -62,23 +72,6 @@ def redact_pii(text: str) -> str:
     for pattern, replacement in _PII_PATTERNS:
         text = pattern.sub(replacement, text)
     return text
-
-
-# -----------------------------------------------------------------------------
-# HTML / XSS sanitization (for user-supplied content displayed in dashboard)
-# -----------------------------------------------------------------------------
-_ALLOWED_TAGS = ["b", "i", "u", "em", "strong", "code", "pre", "p", "br", "ul", "ol", "li", "a"]
-_ALLOWED_ATTRS = {"a": ["href", "title", "rel"]}
-
-
-def sanitize_html(html: str) -> str:
-    return bleach.clean(
-        html,
-        tags=_ALLOWED_TAGS,
-        attributes=_ALLOWED_ATTRS,
-        protocols=["http", "https", "mailto"],
-        strip=True,
-    )
 
 
 def sanitize_user_input(text: str, max_length: int = 4000) -> str:

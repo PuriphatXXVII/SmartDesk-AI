@@ -50,3 +50,13 @@ def test_rate_limiter_uses_memory_in_tests() -> None:
     from app.core.security import _limiter_storage_uri
 
     assert _limiter_storage_uri.startswith("memory")
+
+
+def test_redact_pii_masks_contact_details() -> None:
+    """PII is stripped before it can leave for a third-party webhook endpoint."""
+    from app.core.security import redact_pii
+
+    out = redact_pii("reach me at jane@example.com, card 4111 1111 1111 1111")
+    assert "jane@example.com" not in out
+    assert "[EMAIL_REDACTED]" in out
+    assert "4111 1111 1111 1111" not in out

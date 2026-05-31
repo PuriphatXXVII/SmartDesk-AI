@@ -1,4 +1,5 @@
 import asyncio
+import time
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
@@ -8,15 +9,17 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.widget import org_by_widget_key
+from app.core.config import get_settings
 from app.core.db import SessionLocal
 from app.core.deps import get_current_org, get_current_user, get_db
 from app.core.realtime import hub
-from app.core.security import detect_prompt_injection, limiter, sanitize_user_input
+from app.core.security import detect_prompt_injection, limiter, redact_pii, sanitize_user_input
 from app.models import Conversation, Message, Organization, User
 from app.rag.pipeline import answer, answer_stream
 from app.services.webhooks import notify
 
 router = APIRouter()
+settings = get_settings()
 
 HANDOFF_THRESHOLD = 0.4
 
@@ -74,7 +77,8 @@ def query(
         notify(
             org,
             "message.low_confidence",
-            {"conversation_id": str(conv.id), "confidence": result.confidence, "question": question},
+            # Redact PII before it leaves for a third-party webhook endpoint.
+            {"conversation_id": str(conv.id), "confidence": result.confidence, "question": redact_pii(question)},
         )
 
     return {
@@ -128,6 +132,7 @@ async def chat_socket(websocket: WebSocket) -> None:
     db: Session = SessionLocal()
     conv: Conversation | None = None
     out_q: asyncio.Queue = asyncio.Queue()
+    recent_msgs: list[float] = []  # monotonic timestamps for per-socket throttling
 
     async def sender() -> None:
         while True:
@@ -155,6 +160,17 @@ async def chat_socket(websocket: WebSocket) -> None:
             if not content:
                 await out_q.put({"type": "error", "message": "empty message"})
                 continue
+
+            # Throttle AI calls per socket so a leaked public widget_key can't burn
+            # the org's LLM quota (widget_rate_limit_per_minute, default 20/min).
+            now = time.monotonic()
+            recent_msgs[:] = [t for t in recent_msgs if now - t < 60.0]
+            if len(recent_msgs) >= settings.widget_rate_limit_per_minute:
+                await out_q.put(
+                    {"type": "error", "content": "You're sending messages too quickly. Please wait a moment."}
+                )
+                continue
+            recent_msgs.append(now)
 
             # On the first message: reuse the visitor's existing conversation (the widget
             # echoes back its id so reopening continues the same thread) else create one.
