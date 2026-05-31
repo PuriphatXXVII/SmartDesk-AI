@@ -4,6 +4,7 @@ import uuid
 
 from fastapi.testclient import TestClient
 
+from app.api.chat import _apply_widget_feedback
 from app.core.deps import get_current_org, get_current_user, get_db
 from app.main import app
 from app.models import Conversation, Message, Organization, User
@@ -125,3 +126,43 @@ def test_org_b_cannot_touch_org_a_conversation(db_session) -> None:
         assert client.get("/api/analytics/overview").json()["conversations"] == 0
     finally:
         app.dependency_overrides.clear()
+
+
+# --- widget feedback (visitor thumbs up/down, sent over the WS) ---------------
+
+def test_widget_feedback_records_thumbs(db_session) -> None:
+    org, _ = _seed_org_user(db_session)
+    conv = _conv(db_session, org)
+    msg = _msg(db_session, conv, "assistant", "here you go", confidence=0.9)
+
+    _apply_widget_feedback(db_session, conv, str(msg.id), "positive")
+    db_session.refresh(msg)
+    assert msg.feedback == "positive"
+
+    _apply_widget_feedback(db_session, conv, str(msg.id), "negative")
+    db_session.refresh(msg)
+    assert msg.feedback == "negative"
+
+    _apply_widget_feedback(db_session, conv, str(msg.id), "clear")
+    db_session.refresh(msg)
+    assert msg.feedback is None
+
+
+def test_widget_feedback_scoped_to_own_conversation(db_session) -> None:
+    """A visitor may only rate messages that live in their own conversation."""
+    org, _ = _seed_org_user(db_session)
+    conv_a = _conv(db_session, org)
+    conv_b = _conv(db_session, org)
+    msg_b = _msg(db_session, conv_b, "assistant", "other thread", confidence=0.9)
+
+    _apply_widget_feedback(db_session, conv_a, str(msg_b.id), "positive")
+    db_session.refresh(msg_b)
+    assert msg_b.feedback is None
+
+
+def test_widget_feedback_ignores_bad_id(db_session) -> None:
+    org, _ = _seed_org_user(db_session)
+    conv = _conv(db_session, org)
+    # A non-UUID or unknown id must not raise.
+    _apply_widget_feedback(db_session, conv, "not-a-uuid", "positive")
+    _apply_widget_feedback(db_session, conv, str(uuid.uuid4()), "positive")

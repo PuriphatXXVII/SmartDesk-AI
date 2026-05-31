@@ -157,6 +157,15 @@ class SmartDeskWidget {
       @keyframes sd-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
       .sd-cite{font-size:11px;color:#64748b;margin:-4px 0 10px;padding-left:4px}
       .sd-conf{font-size:11px;color:#94a3b8;margin:-6px 0 10px;padding-left:4px}
+      .sd-fb{display:flex;align-items:center;gap:2px;margin:-2px 0 12px;padding-left:4px;animation:sd-in .26s both}
+      .sd-fb-q{font-size:11px;color:#94a3b8;margin-right:4px}
+      .sd-fb-btn{display:inline-grid;place-items:center;width:26px;height:26px;border:none;background:none;border-radius:7px;color:#94a3b8;cursor:pointer;transition:background .12s,color .12s}
+      .sd-fb-btn svg{width:15px;height:15px;display:block}
+      .sd-fb-btn:hover:not(:disabled){background:#f1f5f9;color:#475569}
+      .sd-fb-btn:disabled{cursor:default}
+      .sd-fb-btn.sd-fb-on{color:${c}}
+      .sd-fb-btn.sd-fb-on svg{fill:${c}1f}
+      .sd-fb-btn.sd-fb-dim{opacity:.3}
       .sd-form{display:flex;gap:8px;border-top:1px solid #e5e7eb;padding:10px;background:#fff}
       .sd-form input{flex:1;border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;outline:none;font-size:14px;color:#0f172a;background:#fff}
       .sd-form input::placeholder{color:#9ca3af;opacity:1}
@@ -294,6 +303,7 @@ class SmartDeskWidget {
     citations?: Citation[];
     confidence?: number;
     conversation_id?: string;
+    message_id?: string;
   }) {
     if (e.type === "token" && e.content) {
       this.hideTyping();
@@ -323,6 +333,8 @@ class SmartDeskWidget {
         this.persist();
         this.streamingRaw = "";
       }
+    } else if (e.type === "answer_meta" && e.message_id) {
+      this.renderFeedback(e.message_id);
     } else if (e.type === "error") {
       this.hideTyping();
       this.append("sd-bot", `⚠️ ${e.content ?? "Something went wrong."}`, false);
@@ -378,6 +390,37 @@ class SmartDeskWidget {
     el.className = "sd-cite";
     el.textContent = `[${n}] ${c.title ?? "source"} · ${(c.score * 100).toFixed(0)}% match`;
     this.msgs().appendChild(el);
+    this.scroll();
+  }
+
+  /** Thumbs up/down on an assistant answer, sent back over the same WS. */
+  private renderFeedback(messageId: string) {
+    const svg = (paths: string) =>
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+    const up = svg(`<path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/>`);
+    const down = svg(`<path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/>`);
+    const row = document.createElement("div");
+    row.className = "sd-fb";
+    row.innerHTML =
+      `<span class="sd-fb-q">Was this helpful?</span>` +
+      `<button class="sd-fb-btn" type="button" data-v="positive" aria-label="Helpful">${up}</button>` +
+      `<button class="sd-fb-btn" type="button" data-v="negative" aria-label="Not helpful">${down}</button>`;
+    const choose = (value: string, btn: HTMLButtonElement) => {
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify({ type: "feedback", message_id: messageId, value }));
+      }
+      row.querySelectorAll<HTMLButtonElement>(".sd-fb-btn").forEach((b) => {
+        b.disabled = true;
+        if (b !== btn) b.classList.add("sd-fb-dim");
+      });
+      btn.classList.add("sd-fb-on");
+      const q = row.querySelector(".sd-fb-q");
+      if (q) q.textContent = "Thanks for your feedback!";
+    };
+    row.querySelectorAll<HTMLButtonElement>(".sd-fb-btn").forEach((b) =>
+      b.addEventListener("click", () => choose(b.dataset.v ?? "", b)),
+    );
+    this.msgs().appendChild(row);
     this.scroll();
   }
 

@@ -95,6 +95,24 @@ def _cite(c) -> dict:  # noqa: ANN001
     }
 
 
+def _apply_widget_feedback(db: Session, conv: Conversation, message_id: str, value: str) -> None:
+    """Record a visitor's thumbs up/down on an assistant message in their own conversation.
+
+    The widget is authenticated only by its widget_key (via the WS), so we scope the
+    update to the visitor's current conversation — they can never rate another org's
+    messages.
+    """
+    try:
+        mid = UUID(message_id)
+    except (ValueError, AttributeError):
+        return
+    msg = db.get(Message, mid)
+    if msg is None or msg.conversation_id != conv.id:
+        return
+    msg.feedback = "positive" if value == "positive" else "negative" if value == "negative" else None
+    db.commit()
+
+
 @router.websocket("/ws")
 async def chat_socket(websocket: WebSocket) -> None:
     """Real-time streaming chat for the embeddable widget.
@@ -126,6 +144,13 @@ async def chat_socket(websocket: WebSocket) -> None:
 
         while True:
             data = await websocket.receive_json()
+
+            # Visitor rated an answer (thumbs up/down) — scoped to their conversation.
+            if data.get("type") == "feedback":
+                if conv is not None:
+                    _apply_widget_feedback(db, conv, str(data.get("message_id", "")), str(data.get("value", "")))
+                continue
+
             content = sanitize_user_input(str(data.get("content", "")), max_length=2000)
             if not content:
                 await out_q.put({"type": "error", "message": "empty message"})
@@ -174,18 +199,20 @@ async def chat_socket(websocket: WebSocket) -> None:
                     citations = event.get("citations", [])
                 await out_q.put(event)
 
-            db.add(
-                Message(
-                    conversation_id=conv.id,
-                    role="assistant",
-                    content="".join(parts),
-                    citations=citations,
-                    confidence=confidence,
-                )
+            assistant_msg = Message(
+                conversation_id=conv.id,
+                role="assistant",
+                content="".join(parts),
+                citations=citations,
+                confidence=confidence,
             )
+            db.add(assistant_msg)
             if confidence is not None and confidence < HANDOFF_THRESHOLD and conv.status == "active":
                 conv.status = "handoff"
             db.commit()
+            db.refresh(assistant_msg)
+            # Tell the widget which message this was, so it can offer thumbs up/down.
+            await out_q.put({"type": "answer_meta", "message_id": str(assistant_msg.id)})
             if confidence is not None and confidence < HANDOFF_THRESHOLD:
                 notify(org, "message.low_confidence",
                        {"conversation_id": str(conv.id), "confidence": confidence})
