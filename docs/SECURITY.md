@@ -9,7 +9,7 @@
 | Threat | Examples in our context | Mitigation |
 |--------|-------------------------|------------|
 | **Spoofing** | Forged JWTs, fake widget keys | Clerk JWKS verification, signed widget keys, HSTS |
-| **Tampering** | Modifying API requests, injected XSS | CSP, output sanitization (bleach), Pydantic validation |
+| **Tampering** | Modifying API requests, injected XSS | CSP, Pydantic validation, React auto-escaping + widget HTML-escaping |
 | **Repudiation** | Users denying actions | Audit log of admin actions, immutable Sentry trail |
 | **Information Disclosure** | Stealing PII, prompt-leak attacks | PII redaction, row-level org_id isolation, hardened system prompt |
 | **Denial of Service** | Flooding chat endpoint, huge uploads | SlowAPI rate limits, upload size cap, Redis-backed quotas |
@@ -111,11 +111,11 @@
 
 ## 7. Open Security TODOs (Pre-Production)
 
-- [ ] Implement Clerk JWT verification end-to-end (currently stubbed)
+- [x] Clerk JWT verification end-to-end (RS256 + JWKS) — implemented in `app/core/clerk.py`
 - [ ] Add CSRF tokens to dashboard mutating endpoints
 - [ ] Set up Snyk / GitHub Advanced Security scanning
-- [ ] Wire up real prompt-injection detection (LLM-as-judge or Lakera Guard)
-- [ ] Magic-bytes upload validation + ClamAV
+- [ ] Upgrade prompt-injection detection from heuristics to LLM-as-judge / Lakera Guard
+- [ ] Magic-bytes upload validation + ClamAV (size cap already enforced)
 - [ ] Penetration test before public launch
 - [ ] SOC 2 prep (audit logs, access reviews)
 

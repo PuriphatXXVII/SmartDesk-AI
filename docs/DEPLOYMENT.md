@@ -57,7 +57,7 @@ For the MVP demo we ship **frontend only** first — it works perfectly with moc
 
 ### Prerequisites
 - Real Postgres + Redis (Supabase + Upstash recommended)
-- Anthropic + OpenAI API keys
+- Anthropic API key + Voyage API key (embeddings) + a Clerk application
 
 ### Steps
 
@@ -71,11 +71,18 @@ For the MVP demo we ship **frontend only** first — it works perfectly with moc
 6. **Environment Variables:**
    ```
    APP_ENV=production
+   APP_DEBUG=false
    APP_SECRET_KEY=<run: python -c "import secrets; print(secrets.token_urlsafe(64))">
    DATABASE_URL=<from Supabase>
    REDIS_URL=<from Upstash>
    ANTHROPIC_API_KEY=<real key>
-   OPENAI_API_KEY=<real key>
+   VOYAGE_API_KEY=<real key — preferred embedding provider; OPENAI_API_KEY optional alt>
+   # Clerk (REQUIRED in prod — without these every dashboard request is 401)
+   CLERK_SECRET_KEY=<Clerk dashboard>
+   CLERK_PUBLISHABLE_KEY=<Clerk dashboard>
+   CLERK_JWT_ISSUER=https://<your-app>.clerk.accounts.dev
+   CLERK_JWKS_URL=https://<your-app>.clerk.accounts.dev/.well-known/jwks.json
+   CLERK_WEBHOOK_SECRET=<Clerk > Webhooks>
    CORS_ORIGINS=https://your-frontend.vercel.app
    ALLOWED_HOSTS=your-backend.up.railway.app
    ```
@@ -85,10 +92,23 @@ For the MVP demo we ship **frontend only** first — it works perfectly with moc
 8. **After deploy:** SSH in (or use Railway shell) and run `alembic upgrade head`
 
 ### Connecting frontend to backend
-Once backend is live, update Vercel env vars:
+Once backend is live, set these Vercel env vars and redeploy:
 - `NEXT_PUBLIC_API_URL` = `https://your-backend.up.railway.app`
 - `NEXT_PUBLIC_WS_URL` = `wss://your-backend.up.railway.app`
-- Redeploy frontend (1 click in Vercel UI)
+- `NEXT_PUBLIC_SITE_URL` = `https://your-frontend.vercel.app` — the widget embed snippet points customers at `<site>/smartdesk.js`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` = `pk_live_...`
+- `CLERK_SECRET_KEY` = `sk_live_...`
+- `NEXT_PUBLIC_DEMO_WIDGET_KEY` = *(optional)* a widget key to show the live demo on the landing page
+
+### Hosting the embeddable widget
+The compiled widget ships from the frontend at `/smartdesk.js`. `frontend/public/smartdesk.js`
+is committed for exactly this reason, so Vercel serves it with no extra setup. **When the
+widget source changes**, rebuild and re-commit it:
+
+```bash
+cd widget && npm run build
+cp dist/smartdesk.js ../frontend/public/smartdesk.js   # Copy-Item on Windows
+```
 
 ---
 
