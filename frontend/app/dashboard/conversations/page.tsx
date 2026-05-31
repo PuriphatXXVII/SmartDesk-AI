@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, MessageSquare, Send, ThumbsDown, ThumbsUp } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { DashboardNav } from "@/components/dashboard-nav";
 import { useI18n, type Messages } from "@/lib/i18n";
@@ -79,6 +79,19 @@ export default function ConversationsPage() {
     },
     [reloadDetail],
   );
+
+  // Deep-link: open the conversation passed via ?c=<id> (from the dashboard "Recent" list)
+  // once on load, so a click there lands directly on that transcript.
+  const deepLinked = useRef(false);
+  useEffect(() => {
+    if (deepLinked.current) return;
+    const initial = new URLSearchParams(window.location.search).get("c");
+    if (initial) {
+      deepLinked.current = true;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      open(initial);
+    }
+  }, [open]);
 
   const reply = useCallback(
     async (content: string) => {

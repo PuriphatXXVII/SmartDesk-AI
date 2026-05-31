@@ -84,7 +84,6 @@ const en = {
   },
   dashboard: {
     title: "Dashboard",
-    subtitle: "Last 7 days · Acme Inc.",
     upload: "Upload Document",
     statConversations: "Conversations",
     statAutoResolved: "Auto-resolved",
@@ -290,7 +289,6 @@ const th: Messages = {
   },
   dashboard: {
     title: "แดชบอร์ด",
-    subtitle: "7 วันล่าสุด · Acme Inc.",
     upload: "อัปโหลดเอกสาร",
     statConversations: "บทสนทนา",
     statAutoResolved: "ตอบอัตโนมัติ",

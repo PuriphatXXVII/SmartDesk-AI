@@ -16,6 +16,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 import { DashboardNav } from "@/components/dashboard-nav";
+import { type MeResponse } from "@/lib/api";
 import { useI18n, type Messages } from "@/lib/i18n";
 import { useApi } from "@/lib/use-api";
 
@@ -53,6 +54,17 @@ export default function DashboardPage() {
   const [range, setRange] = useState<"7d" | "30d">("7d");
   const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [orgName, setOrgName] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    callApi<MeResponse>("/api/auth/me")
+      .then((m) => alive && setOrgName(m.organization.name))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [callApi]);
 
   useEffect(() => {
     let alive = true;
@@ -75,7 +87,10 @@ export default function DashboardPage() {
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{t.dashboard.title}</h1>
-            <p className="mt-1 text-sm text-muted">{t.dashboard.subtitle}</p>
+            <p className="mt-1 text-sm text-muted">
+              {range === "30d" ? t.dashboard.range30 : t.dashboard.range7}
+              {orgName ? ` · ${orgName}` : ""}
+            </p>
           </div>
           <Link
             href="/dashboard/knowledge"
@@ -258,7 +273,7 @@ function RecentConversations({ t }: { t: Messages }) {
           {rows.map((c) => (
             <Link
               key={c.id}
-              href="/dashboard/conversations"
+              href={`/dashboard/conversations?c=${c.id}`}
               className="flex items-center gap-4 py-3 transition hover:opacity-90"
             >
               <div className="grid h-9 w-9 flex-none place-items-center rounded-full bg-surface-2 text-xs font-semibold text-muted">
