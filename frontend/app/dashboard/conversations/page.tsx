@@ -60,6 +60,8 @@ export default function ConversationsPage() {
   }, [callApi, range, status]);
 
   useEffect(() => {
+    // Reset to the loading state, then refetch when filters change.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRows(null);
     loadList();
   }, [loadList]);

@@ -425,6 +425,8 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem("lang");
+      // Mount-time sync from localStorage (client-only); intentional setState.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (stored === "en" || stored === "th") setLangState(stored);
     } catch {
       /* ignore */

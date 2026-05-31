@@ -35,6 +35,8 @@ export default function SettingsPage() {
   }, [callApi]);
 
   useEffect(() => {
+    // Load settings once on mount (the setState lives inside `load`).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load().catch(() => undefined);
   }, [load]);
 

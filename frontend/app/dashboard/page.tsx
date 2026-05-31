@@ -56,6 +56,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     let alive = true;
+    // Show the loading state while (re)fetching the overview for the selected range.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     callApi<Overview>(`/api/analytics/overview?range=${range}`)
       .then((d) => alive && setData(d))

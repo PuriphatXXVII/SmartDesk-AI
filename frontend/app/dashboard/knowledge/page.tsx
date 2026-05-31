@@ -37,6 +37,8 @@ export default function KnowledgePage() {
   }, [callApi]);
 
   useEffect(() => {
+    // Load documents once on mount (the setState lives inside `refresh`).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
 

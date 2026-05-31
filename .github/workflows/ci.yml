@@ -50,8 +50,7 @@ jobs:
       - name: Type check
         run: npm run type-check
       - name: Lint
-        run: npm run lint --if-present
-        continue-on-error: true
+        run: npm run lint
       - name: Build
         run: npm run build
         env:

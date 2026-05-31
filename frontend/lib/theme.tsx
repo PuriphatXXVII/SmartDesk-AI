@@ -12,6 +12,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
+    // Sync React state to the class the pre-paint inline script already applied.
+    // Client-only (no DOM during SSR), so this one mount-time setState is intentional.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
   }, []);
 
