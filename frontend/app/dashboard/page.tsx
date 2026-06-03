@@ -22,7 +22,7 @@ import { useApi } from "@/lib/use-api";
 import { WIDGET_SRC } from "@/lib/widget";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-const CARD = "rounded-2xl border border-line bg-surface p-6";
+const CARD = "card p-6";
 
 interface Overview {
   conversations: number;
@@ -87,16 +87,13 @@ export default function DashboardPage() {
       <main className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t.dashboard.title}</h1>
+            <h1 className="font-display text-3xl font-semibold tracking-tight">{t.dashboard.title}</h1>
             <p className="mt-1 text-sm text-muted">
               {range === "30d" ? t.dashboard.range30 : t.dashboard.range7}
               {orgName ? ` · ${orgName}` : ""}
             </p>
           </div>
-          <Link
-            href="/dashboard/knowledge"
-            className="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50"
-          >
+          <Link href="/dashboard/knowledge" className="btn btn-accent">
             <Plus className="h-4 w-4" />
             {t.dashboard.upload}
           </Link>
@@ -133,17 +130,17 @@ function StatGrid({ data, loading, t }: { data: Overview | null; loading: boolea
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((s) => (
-        <div key={s.label} className="rounded-2xl border border-line bg-surface p-5">
+        <div key={s.label} className="card p-5">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted">{s.label}</span>
-            <span className="grid h-9 w-9 place-items-center rounded-lg bg-indigo-500/15 text-brand-fg">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent-soft text-accent-fg">
               <s.icon className="h-4 w-4" />
             </span>
           </div>
           {loading ? (
             <Skeleton className="mt-3 h-8 w-24" />
           ) : (
-            <div className="mt-3 text-3xl font-bold tracking-tight">{s.value}</div>
+            <div className="mt-3 font-display text-3xl font-semibold tracking-tight">{s.value}</div>
           )}
         </div>
       ))}
@@ -199,27 +196,23 @@ function ConversationsChart({
         <svg viewBox={`0 0 ${w} ${h + 26}`} className="w-full">
           <defs>
             <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
-            </linearGradient>
-            <linearGradient id="stroke" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#6366f1" />
-              <stop offset="100%" stopColor="#a855f7" />
+              <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.16" />
+              <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0" />
             </linearGradient>
           </defs>
           {[0, 0.25, 0.5, 0.75, 1].map((g) => {
             const gy = padTop + (h - padTop) * g;
-            return <line key={g} x1={padX} x2={w - padX} y1={gy} y2={gy} stroke="rgba(148,163,184,0.18)" strokeWidth="1" />;
+            return <line key={g} x1={padX} x2={w - padX} y1={gy} y2={gy} stroke="var(--color-line)" strokeWidth="1" />;
           })}
           {counts.length > 0 && (
             <path d={`${path} L ${xAt(counts.length - 1).toFixed(1)} ${h} L ${xAt(0).toFixed(1)} ${h} Z`} fill="url(#area)" />
           )}
           {counts.length > 0 && (
-            <path d={path} fill="none" stroke="url(#stroke)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d={path} fill="none" stroke="var(--color-accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           )}
           {series.map((p, i) =>
             i % labelStep === 0 ? (
-              <text key={p.day} x={xAt(i).toFixed(1)} y={h + 20} fill="#94a3b8" fontSize="11" textAnchor="middle">
+              <text key={p.day} x={xAt(i).toFixed(1)} y={h + 20} fill="var(--color-subtle)" fontSize="11" textAnchor="middle">
                 {p.day.slice(5)}
               </text>
             ) : null,
@@ -256,7 +249,7 @@ function RecentConversations({ t }: { t: Messages }) {
         <h2 className="text-lg font-semibold">{t.dashboard.recent}</h2>
         <Link
           href="/dashboard/conversations"
-          className="inline-flex items-center gap-1 text-sm text-brand-fg transition hover:opacity-80"
+          className="inline-flex items-center gap-1 text-sm text-accent-fg transition hover:opacity-80"
         >
           {t.dashboard.viewAll} <ArrowRight className="h-3.5 w-3.5" />
         </Link>
@@ -320,7 +313,7 @@ function KnowledgeBaseCard({ t }: { t: Messages }) {
     <div className={CARD}>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold">{t.dashboard.kb}</h2>
-        <Link href="/dashboard/knowledge" className="inline-flex items-center gap-1 text-sm text-brand-fg transition hover:opacity-80">
+        <Link href="/dashboard/knowledge" className="inline-flex items-center gap-1 text-sm text-accent-fg transition hover:opacity-80">
           {t.dashboard.manage} <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
@@ -334,7 +327,7 @@ function KnowledgeBaseCard({ t }: { t: Messages }) {
         <div className="space-y-2">
           {docs.slice(0, 4).map((d) => (
             <div key={d.id} className="flex items-center gap-3 rounded-xl border border-line bg-surface-2 p-2.5 text-sm">
-              <span className="grid h-8 w-8 flex-none place-items-center rounded-lg bg-indigo-500/15 text-brand-fg">
+              <span className="grid h-8 w-8 flex-none place-items-center rounded-lg bg-accent-soft text-accent-fg">
                 <FileText className="h-4 w-4" />
               </span>
               <div className="min-w-0 flex-1">
@@ -352,7 +345,7 @@ function KnowledgeBaseCard({ t }: { t: Messages }) {
       )}
       <Link
         href="/dashboard/knowledge"
-        className="mt-4 flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-line py-3 text-sm text-muted transition hover:border-indigo-400/50 hover:text-brand-fg"
+        className="mt-4 flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-line-strong py-3 text-sm text-muted transition hover:border-accent hover:text-accent-fg"
       >
         <Plus className="h-4 w-4" /> {t.dashboard.addDoc}
       </Link>
@@ -386,7 +379,7 @@ function WidgetEmbedCard({ t }: { t: Messages }) {
     <div className={CARD}>
       <h2 className="mb-1 text-lg font-semibold">{t.dashboard.embed}</h2>
       <p className="mb-3 text-sm text-muted">{t.dashboard.pasteBefore}</p>
-      <pre className="overflow-x-auto rounded-xl border border-white/10 bg-slate-950 p-3 text-xs leading-relaxed text-slate-300">
+      <pre className="overflow-x-auto rounded-lg border border-line bg-surface-2 p-3 font-mono text-xs leading-relaxed text-fg">
         {snippet}
       </pre>
       <button
@@ -395,11 +388,11 @@ function WidgetEmbedCard({ t }: { t: Messages }) {
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
         }}
-        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface py-2 text-sm font-semibold transition hover:bg-surface-2"
+        className="btn btn-outline mt-3 w-full"
       >
         {copied ? (
           <>
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> {t.widget.copied}
+            <CheckCircle2 className="h-4 w-4 text-accent-fg" /> {t.widget.copied}
           </>
         ) : (
           <>

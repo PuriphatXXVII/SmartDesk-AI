@@ -88,20 +88,17 @@ export default function KnowledgePage() {
       <main className="mx-auto max-w-4xl px-6 py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t.knowledge.title}</h1>
+            <h1 className="font-display text-3xl font-semibold tracking-tight">{t.knowledge.title}</h1>
             <p className="mt-1 text-sm text-muted">{t.knowledge.subtitle}</p>
           </div>
-          <Link
-            href="/dashboard/chat"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-semibold transition hover:bg-surface-2"
-          >
+          <Link href="/dashboard/chat" className="btn btn-outline">
             {t.knowledge.testAI} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
         <label
-          className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-line bg-surface p-12 text-center transition ${
-            uploading ? "opacity-60" : "hover:border-indigo-400/50 hover:bg-surface-2"
+          className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-line-strong bg-surface p-12 text-center transition ${
+            uploading ? "opacity-60" : "hover:border-accent hover:bg-surface-2"
           }`}
         >
           <input
@@ -112,7 +109,7 @@ export default function KnowledgePage() {
             disabled={uploading}
             onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
           />
-          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-indigo-500/15 text-brand-fg">
+          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-accent-soft text-accent-fg">
             <UploadCloud className="h-7 w-7" />
           </span>
           <div className="mt-3 font-semibold">
@@ -122,7 +119,7 @@ export default function KnowledgePage() {
         </label>
 
         {error && (
-          <div className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-300">
+          <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft p-3 text-sm text-accent-fg">
             {error}
           </div>
         )}
@@ -142,7 +139,7 @@ export default function KnowledgePage() {
                   key={d.id}
                   className="flex items-center gap-4 rounded-2xl border border-line bg-surface p-4"
                 >
-                  <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-indigo-500/15 text-brand-fg">
+                  <span className="grid h-10 w-10 flex-none place-items-center rounded-lg bg-accent-soft text-accent-fg">
                     <FileText className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -154,7 +151,7 @@ export default function KnowledgePage() {
                   <StatusBadge status={d.status} t={t} />
                   <button
                     onClick={() => remove(d.id)}
-                    className="rounded-lg p-2 text-subtle transition hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400"
+                    className="rounded-lg p-2 text-subtle transition hover:bg-accent-soft hover:text-accent-fg"
                     title={t.knowledge.delete}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -172,7 +169,7 @@ export default function KnowledgePage() {
 function StatusBadge({ status, t }: { status: string; t: Messages }) {
   const styles: Record<string, string> = {
     ready: "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
-    processing: "bg-indigo-500/10 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300",
+    processing: "bg-accent-soft text-accent-fg",
     pending: "bg-surface-2 text-muted",
     failed: "bg-red-500/10 text-red-700 dark:bg-red-500/15 dark:text-red-300",
   };

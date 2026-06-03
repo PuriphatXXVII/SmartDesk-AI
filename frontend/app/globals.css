@@ -4,36 +4,60 @@
 /* Dark mode is toggled by a `.dark` class on <html> (see app/layout.tsx no-flash script). */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+  Editorial Ink — a calm, editorial design system.
+  Warm paper + ink + a single clay accent. No purple, no gradients, no glows,
+  no glassmorphism. Hairline borders + generous whitespace do the work.
+  Fonts are wired from next/font in layout.tsx (display serif + grotesk + mono).
+  Custom classes use @utility (Tailwind v4) so they survive Turbopack.
+*/
 @theme {
-  --color-brand: #6366f1;
-  --color-brand-dark: #4f46e5;
-  --color-accent: #a855f7;
-  --color-brand-fg: #4f46e5; /* readable brand color for text/icons (light default) */
+  /* Typography (per-glyph Thai fallback via --font-thai) */
+  --font-sans: var(--font-hanken), var(--font-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-face), var(--font-thai), "Hanken Grotesk", ui-sans-serif, sans-serif;
+  --font-mono: var(--font-jbmono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* Semantic tokens — LIGHT defaults. Overridden in `.dark` below. */
-  --color-bg: #f8fafc;
-  --color-surface: #ffffff;
-  --color-surface-2: #f1f5f9;
-  --color-line: #e2e8f0;
-  --color-fg: #0f172a;
-  --color-muted: #475569;
-  --color-subtle: #94a3b8;
+  /* --- LIGHT (premium black & white, neutral — no cream) --- */
+  --color-bg: #fafafa;          /* near-white page */
+  --color-surface: #ffffff;     /* cards */
+  --color-surface-2: #f4f4f5;   /* hover / inset */
+  --color-line: #e7e7e9;        /* hairline */
+  --color-line-strong: #d4d4d8; /* stronger divider */
+  --color-fg: #0e0e11;          /* near-black ink */
+  --color-muted: #6b6b73;       /* secondary text */
+  --color-subtle: #a1a1aa;      /* tertiary text */
+  --color-accent: #e5484d;      /* red — fills */
+  --color-accent-fg: #c92a2f;   /* red — text/links (AA on white) */
+  --color-accent-soft: #fce8e8; /* red tint — soft fills */
+
+  /* Back-compat aliases for utilities used across the app */
+  --color-brand: #e5484d;
+  --color-brand-fg: #c92a2f;
 }
 
 .dark {
-  --color-brand-fg: #a5b4fc;
-  --color-bg: #020617;
-  --color-surface: rgba(255, 255, 255, 0.03);
-  --color-surface-2: rgba(255, 255, 255, 0.07);
-  --color-line: rgba(255, 255, 255, 0.1);
-  --color-fg: #f1f5f9;
-  --color-muted: #94a3b8;
-  --color-subtle: #64748b;
+  /* --- DARK (premium near-black) --- */
+  --color-bg: #0b0b0c;
+  --color-surface: #151517;
+  --color-surface-2: #1e1e21;
+  --color-line: #29292e;
+  --color-line-strong: #3a3a40;
+  --color-fg: #f4f4f6;
+  --color-muted: #a0a0a8;
+  --color-subtle: #6a6a73;
+  --color-accent: #f1555a;
+  --color-accent-fg: #ff8589;
+  --color-accent-soft: #2a1517;
+  --color-brand: #f1555a;
+  --color-brand-fg: #ff8589;
 }
 
 @layer base {
   html {
     color-scheme: light;
+    /* Always reserve the scrollbar track so centered (mx-auto) content never
+       shifts horizontally when page height changes (e.g. EN <-> TH toggle). */
+    scrollbar-gutter: stable;
   }
   html.dark {
     color-scheme: dark;
@@ -42,6 +66,9 @@
   body {
     background: var(--color-bg);
     color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
   body {
     transition: background-color 0.2s ease, color 0.2s ease;
@@ -51,28 +78,138 @@
   ::after {
     border-color: var(--color-line);
   }
+  ::selection {
+    background: color-mix(in oklab, var(--color-accent) 26%, transparent);
+  }
+  /* Display serif for headings; tightened tracking. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+    font-weight: 500;
+  }
+
+  /* Inverted surface — the hero product mock flips against the page theme
+     (light page -> dark card, dark page -> light card). Children using the
+     semantic tokens invert automatically because the vars cascade. */
+  .theme-invert {
+    --color-bg: #0b0b0c;
+    --color-surface: #151517;
+    --color-surface-2: #1e1e21;
+    --color-line: #29292e;
+    --color-line-strong: #3a3a40;
+    --color-fg: #f4f4f6;
+    --color-muted: #a0a0a8;
+    --color-subtle: #6a6a73;
+    color: var(--color-fg);
+  }
+  .dark .theme-invert {
+    --color-bg: #fafafa;
+    --color-surface: #ffffff;
+    --color-surface-2: #f4f4f5;
+    --color-line: #e7e7e9;
+    --color-line-strong: #d4d4d8;
+    --color-fg: #0e0e11;
+    --color-muted: #6b6b73;
+    --color-subtle: #a1a1aa;
+  }
 }
 
-@layer utilities {
-  /* Subtle grid backdrop for hero / auth sections */
-  .bg-grid {
-    background-image:
-      linear-gradient(to right, rgba(148, 163, 184, 0.09) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(148, 163, 184, 0.09) 1px, transparent 1px);
-    background-size: 56px 56px;
+/* Eyebrow / kicker — mono, uppercase, tracked. */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* Flat, hairline card — no glow, no nesting, no side-stripe. */
+@utility card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 0.625rem;
+}
+
+/* Small mono pill (citation chips, tags). */
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-line);
+  color: var(--color-muted);
+  background: var(--color-surface);
+}
+
+/* Buttons — solid ink/accent, restrained radius. */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0.7rem 1.15rem;
+  border-radius: 0.45rem;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  cursor: pointer;
+}
+@utility btn-accent {
+  background: var(--color-accent);
+  color: #fff;
+  &:hover {
+    background: color-mix(in oklab, var(--color-accent) 86%, #000);
   }
-  .bg-grid-fade {
-    -webkit-mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, #000 35%, transparent 100%);
-    mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, #000 35%, transparent 100%);
+}
+@utility btn-ink {
+  background: var(--color-fg);
+  color: var(--color-bg);
+  &:hover {
+    background: color-mix(in oklab, var(--color-fg) 84%, var(--color-accent));
   }
-  /* Indigo -> violet gradient text (works on both themes) */
-  .text-gradient {
-    background-image: linear-gradient(110deg, #6366f1 0%, #8b5cf6 55%, #a855f7 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+}
+@utility btn-outline {
+  background: transparent;
+  color: var(--color-fg);
+  border: 1px solid var(--color-line-strong);
+  &:hover {
+    background: var(--color-surface-2);
   }
-  .dark .text-gradient {
-    background-image: linear-gradient(110deg, #818cf8 0%, #c084fc 55%, #e879f9 100%);
+}
+
+/* Accent link with an underline on hover. */
+@utility link-accent {
+  color: var(--color-accent-fg);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  &:hover {
+    text-decoration: underline;
   }
+}
+
+/* --- Back-compat: neutralise old AI-slop utilities to clean equivalents so
+   pages not yet redesigned degrade gracefully (no purple gradients/glows). --- */
+@utility text-gradient {
+  color: var(--color-accent-fg);
+  background: none;
+}
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, var(--color-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-line) 1px, transparent 1px);
+  background-size: 58px 58px;
+}
+@utility bg-grid-fade {
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 100%);
 }

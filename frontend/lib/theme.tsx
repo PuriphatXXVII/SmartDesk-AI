@@ -8,8 +8,8 @@ const ThemeCtx = createContext<{ theme: Theme; toggle: () => void } | null>(null
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // The actual <html> class is set pre-paint by the inline script in layout.tsx.
-  // We default to "dark" to match SSR, then sync from the DOM after mount.
-  const [theme, setTheme] = useState<Theme>("dark");
+  // We default to "light" to match SSR, then sync from the DOM after mount.
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
     // Sync React state to the class the pre-paint inline script already applied.

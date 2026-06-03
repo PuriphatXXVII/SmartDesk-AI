@@ -13,9 +13,9 @@ interface OrgSettings {
   webhook_secret_set: boolean;
 }
 
-const CARD = "rounded-2xl border border-line bg-surface p-6";
+const CARD = "card p-6";
 const INPUT =
-  "w-full rounded-lg border border-line bg-surface px-3 py-2 text-fg placeholder:text-subtle outline-none transition focus:border-indigo-400/60";
+  "w-full rounded-lg border border-line bg-surface px-3 py-2 text-fg placeholder:text-subtle outline-none transition focus:border-accent";
 
 const EVENTS = ["conversation.started", "message.low_confidence", "conversation.handoff"];
 
@@ -59,7 +59,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-bg text-fg">
       <DashboardNav />
       <main className="mx-auto max-w-3xl px-6 py-8">
-        <h1 className="text-3xl font-bold tracking-tight">{t.settings.title}</h1>
+        <h1 className="font-display text-3xl font-semibold tracking-tight">{t.settings.title}</h1>
         <p className="mt-1 text-sm text-muted">{t.settings.subtitle}</p>
 
         {!data ? (
@@ -68,14 +68,14 @@ export default function SettingsPage() {
           <div className="mt-6 space-y-6">
             <div className={`flex items-center justify-between ${CARD}`}>
               <span className="text-sm text-muted">{t.settings.plan}</span>
-              <span className="rounded-full bg-indigo-500/15 px-3 py-1 text-sm font-semibold capitalize text-brand-fg">
+              <span className="rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold capitalize text-accent-fg">
                 {data.plan}
               </span>
             </div>
 
             <div className={`space-y-5 ${CARD}`}>
               <div className="flex items-center gap-2">
-                <span className="grid h-9 w-9 place-items-center rounded-lg bg-indigo-500/15 text-brand-fg">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent-soft text-accent-fg">
                   <Webhook className="h-4 w-4" />
                 </span>
                 <h2 className="text-lg font-semibold">Webhooks</h2>
@@ -112,7 +112,7 @@ export default function SettingsPage() {
                 <div className="text-sm font-medium">{t.settings.events}</div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {EVENTS.map((e) => (
-                    <code key={e} className="rounded-md bg-indigo-500/10 px-2 py-1 text-xs text-brand-fg">
+                    <code key={e} className="rounded-md bg-accent-soft px-2 py-1 text-xs text-accent-fg">
                       {e}
                     </code>
                   ))}
@@ -124,7 +124,7 @@ export default function SettingsPage() {
                 <button
                   onClick={save}
                   disabled={saving}
-                  className="rounded-xl bg-linear-to-r from-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50 disabled:opacity-50"
+                  className="btn btn-accent disabled:opacity-50"
                 >
                   {saving ? "…" : t.settings.save}
                 </button>

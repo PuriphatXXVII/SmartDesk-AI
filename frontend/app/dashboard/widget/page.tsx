@@ -17,9 +17,9 @@ interface Settings {
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-const CARD = "rounded-2xl border border-line bg-surface p-6";
+const CARD = "card p-6";
 const INPUT =
-  "w-full rounded-lg border border-line bg-surface px-3 py-2 text-fg placeholder:text-subtle outline-none transition focus:border-indigo-400/60";
+  "w-full rounded-lg border border-line bg-surface px-3 py-2 text-fg placeholder:text-subtle outline-none transition focus:border-accent";
 
 export default function WidgetPage() {
   const callApi = useApi();
@@ -73,7 +73,7 @@ export default function WidgetPage() {
     <div className="min-h-screen bg-bg text-fg">
       <DashboardNav />
       <main className="mx-auto max-w-5xl px-6 py-8">
-        <h1 className="mb-1 text-3xl font-bold tracking-tight">{t.widget.title}</h1>
+        <h1 className="mb-1 font-display text-3xl font-semibold tracking-tight">{t.widget.title}</h1>
         <p className="mb-6 text-sm text-muted">{t.widget.subtitle}</p>
 
         {!s ? (
@@ -128,7 +128,7 @@ export default function WidgetPage() {
                 <button
                   onClick={save}
                   disabled={saving}
-                  className="rounded-xl bg-linear-to-r from-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50 disabled:opacity-50"
+                  className="btn btn-accent disabled:opacity-50"
                 >
                   {saving ? t.widget.saving : t.widget.save}
                 </button>
@@ -156,7 +156,7 @@ export default function WidgetPage() {
               <div className={CARD}>
                 <h2 className="mb-1 text-lg font-semibold">{t.widget.install}</h2>
                 <p className="mb-3 text-sm text-muted">{t.widget.pasteBefore}</p>
-                <pre className="overflow-x-auto rounded-xl border border-white/10 bg-slate-950 p-3 text-xs leading-relaxed text-slate-300">
+                <pre className="overflow-x-auto rounded-lg border border-line bg-surface-2 p-3 font-mono text-xs leading-relaxed text-fg">
                   {snippet}
                 </pre>
                 <button
@@ -165,11 +165,11 @@ export default function WidgetPage() {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 1500);
                   }}
-                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface py-2 text-sm font-semibold transition hover:bg-surface-2"
+                  className="btn btn-outline mt-3 w-full"
                 >
                   {copied ? (
                     <>
-                      <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> {t.widget.copied}
+                      <Check className="h-4 w-4 text-accent-fg" /> {t.widget.copied}
                     </>
                   ) : (
                     <>
@@ -210,7 +210,7 @@ function WidgetPreview({
   send: string;
 }) {
   return (
-    <div className="relative h-72 overflow-hidden rounded-xl border border-line bg-slate-900">
+    <div className="relative h-72 overflow-hidden rounded-lg border border-line bg-fg">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid" style={{ opacity: 0.4 }} />
       <div className="absolute bottom-3 right-3 w-56 overflow-hidden rounded-xl border border-black/5 bg-white text-slate-900 shadow-2xl">
         <div className="flex items-center justify-between p-2.5 text-white" style={{ background: color }}>

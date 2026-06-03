@@ -33,7 +33,7 @@ export function LangToggle() {
           key={o.code}
           onClick={() => setLang(o.code)}
           className={`rounded-md px-2 py-1 transition ${
-            lang === o.code ? "bg-brand text-white" : "text-muted hover:text-fg"
+            lang === o.code ? "bg-fg text-bg" : "text-muted hover:text-fg"
           }`}
         >
           {o.label}

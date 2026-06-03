@@ -77,12 +77,12 @@ export default function ChatPage() {
       <DashboardNav />
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-8">
         <div className="mb-5">
-          <h1 className="text-3xl font-bold tracking-tight">{t.chat.title}</h1>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">{t.chat.title}</h1>
           <p className="mt-1 text-sm text-muted">
             {t.chat.subtitle}{" "}
             <Link
               href="/dashboard/knowledge"
-              className="inline-flex items-center gap-0.5 text-brand-fg transition hover:opacity-80"
+              className="inline-flex items-center gap-0.5 text-accent-fg transition hover:opacity-80"
             >
               {t.chat.manageKnowledge} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
@@ -92,7 +92,7 @@ export default function ChatPage() {
         <div className="flex-1 space-y-4 overflow-y-auto rounded-2xl border border-line bg-surface p-6">
           {turns.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center text-subtle">
-              <span className="mb-3 grid h-12 w-12 place-items-center rounded-xl bg-indigo-500/15 text-brand-fg">
+              <span className="mb-3 grid h-12 w-12 place-items-center rounded-xl bg-accent-soft text-accent-fg">
                 <Sparkles className="h-6 w-6" />
               </span>
               {t.chat.empty}
@@ -103,9 +103,9 @@ export default function ChatPage() {
           ))}
           {loading && (
             <div className="flex items-center gap-1.5 text-sm text-subtle">
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand [animation-delay:-0.3s]" />
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand [animation-delay:-0.15s]" />
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent [animation-delay:-0.3s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent [animation-delay:-0.15s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent" />
             </div>
           )}
         </div>
@@ -115,13 +115,9 @@ export default function ChatPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={t.chat.placeholder}
-            className="flex-1 rounded-xl border border-line bg-surface px-4 py-3 text-fg placeholder:text-subtle outline-none transition focus:border-indigo-400/60"
+            className="flex-1 rounded-xl border border-line bg-surface px-4 py-3 text-fg placeholder:text-subtle outline-none transition focus:border-accent"
           />
-          <button
-            type="submit"
-            disabled={loading}
-            className="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-indigo-500 to-violet-500 px-5 py-3 font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50 disabled:opacity-50"
-          >
+          <button type="submit" disabled={loading} className="btn btn-accent disabled:opacity-50">
             <Send className="h-4 w-4" />
             {t.chat.send}
           </button>
@@ -134,7 +130,7 @@ export default function ChatPage() {
 function Bubble({ turn, t }: { turn: Turn; t: Messages }) {
   if (turn.role === "user") {
     return (
-      <div className="ml-auto max-w-[80%] animate-in fade-in slide-in-from-bottom-1 duration-200 rounded-2xl rounded-br-md bg-linear-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-white shadow-lg shadow-indigo-500/20">
+      <div className="ml-auto max-w-[80%] animate-in fade-in slide-in-from-bottom-1 duration-200 rounded-2xl rounded-br-md bg-accent px-4 py-2.5 text-white">
         {turn.content}
       </div>
     );

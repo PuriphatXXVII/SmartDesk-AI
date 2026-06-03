@@ -35,16 +35,16 @@ export function AccountInfo() {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="hidden text-right sm:block">
+      <div className="hidden max-w-[15rem] text-right sm:block">
         {me ? (
           <>
-            <div className="text-sm font-semibold text-fg">{me.organization.name}</div>
-            <div className="text-xs text-muted">
+            <div className="truncate text-sm font-semibold text-fg">{me.organization.name}</div>
+            <div className="truncate text-xs text-muted">
               {me.user.email} · {me.organization.plan}
             </div>
           </>
         ) : error ? (
-          <div className="text-xs text-red-500 dark:text-red-400" title={error}>
+          <div className="text-xs text-accent-fg" title={error}>
             {t.account.offline}
           </div>
         ) : (
@@ -54,7 +54,7 @@ export function AccountInfo() {
       {clerkConfigured ? (
         <UserButton />
       ) : (
-        <div className="h-8 w-8 rounded-full bg-linear-to-br from-indigo-500 to-violet-500" />
+        <div className="h-8 w-8 rounded-full border border-line bg-fg" />
       )}
     </div>
   );

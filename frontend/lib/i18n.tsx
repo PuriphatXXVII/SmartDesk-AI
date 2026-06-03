@@ -76,7 +76,7 @@ const en = {
   },
   cta: {
     title: "Ship your AI support agent today",
-    sub: "Free to start. No credit card. Be answering customer questions in ten minutes.",
+    sub: "Free to start. No credit card. Answer customer questions in 10 minutes.",
     button: "Get started free",
   },
   footer: {

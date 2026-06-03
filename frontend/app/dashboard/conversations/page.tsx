@@ -34,7 +34,7 @@ interface Detail {
   messages: Msg[];
 }
 
-const CARD = "rounded-2xl border border-line bg-surface";
+const CARD = "card";
 
 function badge(status: string) {
   return status === "handoff"
@@ -132,7 +132,7 @@ export default function ConversationsPage() {
       <DashboardNav />
       <main className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">{t.conversations.title}</h1>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">{t.conversations.title}</h1>
           <p className="mt-1 text-sm text-muted">{t.conversations.subtitle}</p>
         </div>
 
@@ -144,7 +144,7 @@ export default function ConversationsPage() {
                 key={s}
                 onClick={() => setStatus(s)}
                 className={`rounded-md px-3 py-1 transition ${
-                  status === s ? "bg-brand text-white" : "text-muted hover:text-fg"
+                  status === s ? "bg-fg text-bg" : "text-muted hover:text-fg"
                 }`}
               >
                 {t.conversations[s]}
@@ -202,7 +202,7 @@ export default function ConversationsPage() {
           <div className={`${CARD} flex min-h-[60vh] flex-col p-6`}>
             {!selected ? (
               <div className="flex flex-1 flex-col items-center justify-center py-20 text-center text-subtle">
-                <span className="mb-3 grid h-12 w-12 place-items-center rounded-xl bg-indigo-500/15 text-brand-fg">
+                <span className="mb-3 grid h-12 w-12 place-items-center rounded-xl bg-accent-soft text-accent-fg">
                   <MessageSquare className="h-6 w-6" />
                 </span>
                 {t.conversations.selectHint}
@@ -290,7 +290,7 @@ function Transcript({
             return (
               <div
                 key={m.id}
-                className="ml-auto max-w-[80%] animate-in fade-in slide-in-from-bottom-1 duration-200 rounded-2xl rounded-br-md bg-linear-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-white"
+                className="ml-auto max-w-[80%] animate-in fade-in slide-in-from-bottom-1 duration-200 rounded-2xl rounded-br-md bg-accent px-4 py-2.5 text-white"
               >
                 {m.content}
               </div>
@@ -341,13 +341,9 @@ function Transcript({
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={t.conversations.replyPlaceholder}
-          className="flex-1 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm text-fg placeholder:text-subtle outline-none transition focus:border-indigo-400/60"
+          className="flex-1 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm text-fg placeholder:text-subtle outline-none transition focus:border-accent"
         />
-        <button
-          type="submit"
-          disabled={sending}
-          className="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-indigo-500/50 disabled:opacity-50"
-        >
+        <button type="submit" disabled={sending} className="btn btn-accent disabled:opacity-50">
           <Send className="h-4 w-4" />
           {t.conversations.reply}
         </button>
