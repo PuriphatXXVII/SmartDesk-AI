@@ -76,6 +76,21 @@ class Settings(BaseSettings):
     def allowed_hosts_list(self) -> list[str]:
         return [h.strip() for h in self.allowed_hosts.split(",") if h.strip()]
 
+    @property
+    def sqlalchemy_url(self) -> str:
+        """DSN with an explicit driver. We ship psycopg v3 (``psycopg[binary]``), but a
+        bare ``postgresql://`` (the style Supabase / Railway / Heroku hand out) makes
+        SQLAlchemy default to psycopg2, which we don't install -> ModuleNotFoundError.
+        Force the psycopg (v3) dialect so the same DSN works locally and in production;
+        SQLite and already-qualified (``postgresql+...``) URLs pass through untouched."""
+        url = self.database_url
+        if url.startswith("postgresql+"):
+            return url
+        if url.startswith(("postgresql://", "postgres://")):
+            _, _, rest = url.partition("://")
+            return f"postgresql+psycopg://{rest}"
+        return url
+
 
 @lru_cache
 def get_settings() -> Settings:
