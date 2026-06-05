@@ -6,6 +6,9 @@
 
 **Multi-tenant SaaS** — a RAG-powered support chatbot you embed with one `<script>` tag: real-time streaming chat, source-cited answers, live human handoff, analytics, and webhooks.
 
+### 🌐 [**Try the live demo →**](https://smart-desk-ai-lyart.vercel.app)
+
+[![Live demo](https://img.shields.io/badge/demo-live-22c55e?style=flat&logo=vercel&logoColor=white)](https://smart-desk-ai-lyart.vercel.app)
 [![CI](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/ci.yml)
 [![Security Scan](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/security.yml/badge.svg)](https://github.com/PuriphatXXVII/SmartDesk-AI/actions/workflows/security.yml)
 [![Tests](https://img.shields.io/badge/tests-40_passing-success?style=flat)](backend/tests)
@@ -18,6 +21,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
 ![pgvector](https://img.shields.io/badge/pgvector-vector_search-blue)
 
+[🌐 Live demo](https://smart-desk-ai-lyart.vercel.app) ·
 [📜 Architecture](docs/ARCHITECTURE.md) ·
 [🗺️ Roadmap](docs/ROADMAP.md) ·
 [🔒 Security](docs/SECURITY.md) ·
@@ -57,7 +61,7 @@ This is a **feature-complete MVP** — every capability below is implemented, wi
 | **Polish** | Light/dark theme · bilingual UI (EN/TH) · responsive · accessible |
 | **Security** | CSP/HSTS headers · rate limiting · prompt-injection & PII guards · JWT verification (JWKS) |
 
-> ⏳ **Remaining:** production deployment (Railway + Vercel + Supabase) and a recorded demo — see the [roadmap](#-roadmap).
+> 🚀 **Live in production** — frontend on **Vercel**, backend on **Railway**, Postgres + pgvector on **Supabase**, Redis on **Upstash**, auth on **Clerk**. [Try it now →](https://smart-desk-ai-lyart.vercel.app)
 
 ---
 
@@ -122,6 +126,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full deep dive.
 | **Realtime** | WebSocket streaming + in-process pub/sub hub for agent → widget delivery |
 | **Security** | Rate limiting (SlowAPI) · CSP/HSTS middleware · prompt-injection & PII guards · HMAC-signed webhooks |
 | **CI/CD** | GitHub Actions · Docker · Dependabot · CodeQL · Gitleaks |
+| **Hosting** | **Vercel** (frontend) · **Railway** (backend, Docker) · **Supabase** (Postgres + pgvector) · **Upstash** (Redis) · **Clerk** (auth) |
 
 > 🔒 See [docs/SECURITY.md](docs/SECURITY.md) for the full threat model (STRIDE), defenses, and dependency policy.
 
@@ -176,7 +181,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full dev workflow.
 | 3 | RAG chat with streaming + embeddable WebSocket widget | ✅ Done |
 | 4 | Conversations view + analytics dashboard (real data) | ✅ Done |
 | 5 | Human handoff · realtime agent→widget · webhooks · isolation tests | ✅ Done |
-| 6 | Production deploy (Railway + Vercel + Supabase) + demo video | ⏳ In progress |
+| 6 | Production deploy — Vercel · Railway · Supabase · Upstash · Clerk (**live**) | ✅ Done |
+
+**🎉 All six milestones shipped — the app is live at [smart-desk-ai-lyart.vercel.app](https://smart-desk-ai-lyart.vercel.app).**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for week-by-week deliverables.
 
