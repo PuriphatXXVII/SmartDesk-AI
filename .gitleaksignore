@@ -1,0 +1,9 @@
+# Reviewed false positives for gitleaks (secret scanning).
+#
+# gitleaks' "stripe-access-token" rule matches the dummy value
+#   CLERK_SECRET_KEY: sk_test_placeholder_for_ci_only
+# in .github/workflows/ci.yml. It is NOT a real secret — it only exists so the
+# Next.js production build has the env var present during CI. Clerk test keys
+# share the `sk_test_` prefix with Stripe tokens, hence the misdetection.
+# Reviewed 2026-06-10 — safe to ignore.
+ecf43ebc6bbe2513e7583c572279dbd6c4e2e0d4:.github/workflows/ci.yml:stripe-access-token:56

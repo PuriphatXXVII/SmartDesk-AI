@@ -1,6 +1,7 @@
 name: Security Scan
 
 on:
+  workflow_dispatch:        # allow a manual full-history re-scan
   push:
     branches: [main]
   pull_request:
